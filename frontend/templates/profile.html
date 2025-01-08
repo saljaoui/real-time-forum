@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile</title>
+  <link rel="stylesheet" href="../static/css/styles.css" />
+  <link rel="stylesheet" href="../static/css/alert.css" />
+
+  <link rel="icon" href="../static/imgs/logo.png" type="image/x-icon">
+</head>
+
+<body>
+  <section>
+    <aside class="aside-left">
+      <div class="join">
+        <img class="logo" src="../static/imgs/logo.png" alt="logo" />
+        <h2>Join the conversation</h2>
+        <button class="btnLogin-popup" onclick="window.location.href='/login'">
+          Login
+        </button>
+        <button class="btnSignUp-popup" onclick="window.location.href='/login'">
+          Sign up
+        </button>
+      </div>
+      <div class="aside-nav">
+        <div class="logo-user">
+          <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+        </div>
+        <nav>
+          <a href="#" class="nav-item" id="home">
+            <ion-icon class="active" name="home-outline"></ion-icon>
+            <ion-icon name="home"></ion-icon>
+            <h1>Home</h1>
+          </a>
+
+          <a href="#" class="nav-item" id="categories">
+            <ion-icon class="active" name="filter-circle-outline"></ion-icon>
+            <ion-icon name="filter-circle"></ion-icon>
+            <h1>categories</h1>
+          </a>
+          <a href="#" class="nav-item active" id="profile">
+            <ion-icon name="person-circle-outline"></ion-icon>
+            <ion-icon class="active" name="person-circle"></ion-icon>
+            <h1>Profile</h1>
+          </a>
+          <a href="#" class="nav-item" id="settings">
+            <ion-icon class="active" name="settings-outline"></ion-icon>
+            <ion-icon name="settings"></ion-icon>
+            <h1>settings</h1>
+          </a>
+          <button class="newPost-popup">
+            <ion-icon name="duplicate"></ion-icon>
+            <h1>New Post</h1>
+          </button>
+
+          <div id="creatPost-popup">
+            <div class="newPost">
+              <div class="newPost-header">
+                <button class="cancel-btn post-close">Cancel</button>
+                <button class="post-btn create-post">Post</button>
+              </div>
+              <div class="newPost-content">
+                <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+                <textarea placeholder="What's up?" id="content" required></textarea>
+              </div>
+              <div class="openCategories" id="choice-categories">
+                <h1>Categories</h1>
+              </div>
+            </div>
+          </div>
+          <div id="categories-popup">
+            <div class="newPost">
+              <div class="newPost-header">
+                <button class="cancel-btn category">Cancel</button>
+                <h1>Choice you are categories:</h1>
+                <button class="post-btn done-post">Done</button>
+              </div>
+              <div class="categories-content">
+                <div class="categories-list">
+                  <div class="category-item">General</div>
+                  <div class="category-item">Technology</div>
+                  <div class="category-item">Sports</div>
+                  <div class="category-item">Entertainment</div>
+                  <div class="category-item">Science</div>
+                  <div class="category-item">Health</div>
+                  <div class="category-item">Food</div>
+                  <div class="category-item">Travel</div>
+                  <div class="category-item">Fashion</div>
+                  <div class="category-item">Art</div>
+                  <div class="category-item">Music</div>
+                </div>
+              </div>
+          </div>
+        </nav>
+      </div>
+    </aside>
+    <main>
+      <div class="alert"></div>
+      <header class="profile-header"></header>
+      <div class="profile-content">
+        <div class="profile-avatar">
+          <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+        </div>
+
+        <div class="profile-info">
+          
+        </div>
+
+        <nav class="profile-nav">
+          <a href="#" class="active" id="posts">Posts</a>
+          <a href="#" id="likes">Likes</a>
+        </nav>
+      </div>
+      <article class="profile content_post main"></article>
+    </main>
+    <aside class="aside-right">
+      <div class="link-list">
+        <a href="/about">about</a>·<a href="/contact">contact</a>
+      </div>
+    </aside>
+  </section>
+  <script type="module" src="../static/js/alert.js"></script>
+  <script type="module" src="../static/js/profile.js"></script>
+  <!-- <script type="module" src="../static/js/home.js"></script> -->
+  <script type="module" src="../static/js/popup.js"></script> 
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../static/imgs/logo.png" type="image/x-icon">
+    <title>comment</title>
+    <link rel="stylesheet" href="../static/css/alert.css" />
+
+    <link rel="stylesheet" href="../static/css/styles.css" />
+</head>
+
+<body>
+    <section>
+        <aside class="aside-left">
+            <div class="join">
+              <img class="logo" src="../static/imgs/logo.png" alt="logo" />
+              <h2>Join the conversation</h2>
+              <button class="btnLogin-popup" onclick="window.location.href='/login'">
+                Login
+              </button>
+              <button class="btnSignUp-popup" onclick="window.location.href='/login'">
+                Sign up
+              </button>
+            </div>
+      
+            <div class="aside-nav">
+              <div class="logo-user">
+                <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+              </div>
+              <nav>
+                <a href="#" class="nav-item active" id="home">
+                  <ion-icon name="home-outline"></ion-icon>
+                  <ion-icon class="active" name="home"></ion-icon>
+                  <h1>Home</h1>
+                </a>
+      
+                <a href="#" class="nav-item" id="categories">
+                  <ion-icon class="active" name="filter-circle-outline"></ion-icon>
+                  <ion-icon name="filter-circle"></ion-icon>
+                  <h1>categories</h1>
+                </a>
+                <a href="#" class="nav-item" id="profile">
+                  <ion-icon class="active" name="person-circle-outline"></ion-icon>
+                  <ion-icon name="person-circle"></ion-icon>
+      
+                  <h1>Profile</h1>
+                </a>
+                <a href="#" class="nav-item" id="settings">
+                  <ion-icon class="active" name="settings-outline"></ion-icon>
+                  <ion-icon name="settings"></ion-icon>
+                  <h1>settings</h1>
+                </a>
+                <button class="newPost-popup">
+                  <ion-icon name="duplicate"></ion-icon>
+                  <h1>New Post</h1>
+                </button>
+      
+                <div id="creatPost-popup" class="add_post">
+                  <div class="newPost">
+                    <div class="newPost-header">
+                      <button class="cancel-btn post-close">Cancel</button>
+                      <button class="post-btn create-post create-comment">Post</button>
+                    </div>
+                    <div class="newPost-content">
+                      <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+                      <textarea maxlength="1000" placeholder="What's up?" id="content" required></textarea>
+                    </div>
+                    <div class="openCategories" id="choice-categories">
+                      <h1>Categories</h1>
+                    </div>
+                  </div>
+                </div>
+                <div id="categories-popup">
+                  <div class="newPost">
+                    <div class="newPost-header">
+                      <button class="cancel-btn category">Cancel</button>
+                      <h1>Choice you are categories:</h1>
+                      <button class="post-btn done-post">Done</button>
+                    </div>
+                    <div class="categories-content">
+                      <div class="categories-list">
+                        <div class="category-item">General</div>
+                        <div class="category-item">Technology</div>
+                        <div class="category-item">Sports</div>
+                        <div class="category-item">Entertainment</div>
+                        <div class="category-item">Science</div>
+                        <div class="category-item">Health</div>
+                        <div class="category-item">Food</div>
+                        <div class="category-item">Travel</div>
+                        <div class="category-item">Fashion</div>
+                        <div class="category-item">Art</div>
+                        <div class="category-item">Music</div>
+                      </div>
+                    </div>
+                </div>
+                
+              </nav>
+            </div>
+          </aside>
+        <main>
+          <div class="alert"></div>
+            <div class="post commens-card">
+                <div class="post-header">
+                    <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+                    <div class="user-info">
+                        <div class="display-name full-name"></div>
+                        <span class="username"></span>
+                        <span class="timestamp time">1h</span>
+                    </div>
+                </div>
+                <div class="post-content content">
+                    
+                </div>
+                <div class="post-actions ">
+                    <div class="action active is_liked" data-context="comment" id="likes" data-liked="false" data-like="like" data-id_card="" >
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 19c-.072 0-.145 0-.218-.006A4.1 4.1 0 0 1 6 14.816V11H2.862a1.751 1.751 0 0 1-1.234-2.993L9.41.28a.836.836 0 0 1 1.18 0l7.782 7.727A1.751 1.751 0 0 1 17.139 11H14v3.882a4.134 4.134 0 0 1-.854 2.592A3.99 3.99 0 0 1 10 19Zm0-17.193L2.685 9.071a.251.251 0 0 0 .177.429H7.5v5.316A2.63 2.63 0 0 0 9.864 17.5a2.441 2.441 0 0 0 1.856-.682A2.478 2.478 0 0 0 12.5 15V9.5h4.639a.25.25 0 0 0 .176-.429L10 1.807Z"></path>
+                    </svg>
+                        <span id="is_liked"></span>
+                    </div>
+                    <div  class="action disliked" id="likes" data-liked="false"  data-like="Dislikes" data-id_card="">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 1c.072 0 .145 0 .218.006A4.1 4.1 0 0 1 14 5.184V9h3.138a1.751 1.751 0 0 1 1.234 2.993L10.59 19.72a.836.836 0 0 1-1.18 0l-7.782-7.727A1.751 1.751 0 0 1 2.861 9H6V5.118a4.134 4.134 0 0 1 .854-2.592A3.99 3.99 0 0 1 10 1Zm0 17.193 7.315-7.264a.251.251 0 0 0-.177-.429H12.5V5.184A2.631 2.631 0 0 0 10.136 2.5a2.441 2.441 0 0 0-1.856.682A2.478 2.478 0 0 0 7.5 5v5.5H2.861a.251.251 0 0 0-.176.429L10 18.193Z"></path>
+                    </svg>  
+                        <span id="is_Dislikes" data-disliked="disliked"></span>
+                    </div>
+                    <div class="action">
+                      <svg width="17" height="17" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
+                    </svg>
+                        <span class="comments"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="post">
+                <div class="postReply">
+                    <img src="../static/imgs/profilePic.png" class="avatar" alt="Profile picture" />
+                    <div class="writeReply">Write your reply</div>
+                </div>
+            </div>  
+            <div class="allcomment"></div>
+        </main>
+        <div id="side-right"></div>
+        <aside class="aside-right">
+            <!-- <input class="search" type="text" placeholder="Search.." data-search /> -->
+            <div class="link-list">
+                <a href="/about">about</a>·<a href="/contact">contact</a>
+            </div>
+        </aside>
+    </section>
+    <script type="module" src="../static/js/alert.js"></script> 
+    <script type="module" src="../static/js/comment.js"></script>
+    <script type="module" src="../static/js/home.js"></script>
+    <script type="module" src="../static/js/popup.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+ </body>
+
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=a, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="icon" href="../static/imgs/logo.png" type="image/x-icon">
+    <title>Contact</title>
+</head>
+
+<body>
+    <section class="sectionContact">
+        <div class="logoAndName">
+            <a href="/home">
+                <img class="logo" src="../static/imgs/logo.png" alt="logo" />
+            </a>
+            <h2>Bluezone</h2>
+        </div>
+        <div class="wrapper">
+            <div class="form-box login">
+                <h2>Contact Us</h2>
+                <form action="https://api.web3forms.com/submit" method="POST" id="login">
+                    <input type="hidden" name="access_key" value="9fc8a28a-9f8c-46a5-aed0-6360e6d8ffd7">
+                    <div class="input-box">
+                        <span class="icon"><ion-icon name="mail"></ion-icon></span>
+                        <input type="text" id="email" name="email" required />
+                        <label>Your Email</label> 
+                    </div>
+                    <div class="input-box-textarea">
+                        <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
+                        <textarea id="textMsg" name="message" required></textarea>
+                        <label>Your Message</label>
+                    </div>
+                    <button type="submit" class="btn">Submit</button>
+                    <div class="login-register">
+                        <p>
+                            Do you want to go back?
+                            <a class="home-link" href="/home">Home</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+    </section>
+ </body>
+
+</html>
