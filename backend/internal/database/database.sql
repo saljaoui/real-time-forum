@@ -8,7 +8,8 @@ CREATE TABLE user(
     password text not NULL,
     expires DATETIME,
     CreateAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UUID text
+    UUID text,
+    status text
 );
 
 CREATE TABLE post (

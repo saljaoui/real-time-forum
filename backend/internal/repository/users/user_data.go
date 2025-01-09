@@ -21,8 +21,13 @@ func emailExists(email string) bool {
 }
 
 func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
-	stm := "UPDATE user SET UUID=?, expires =?  WHERE id=?"
-	_, err := database.Exec(stm, uudi, expires, userId)
+	status := "Offline"
+	if uudi != "" {
+		status = "Online"
+	}
+	fmt.Println(status)
+	stm := "UPDATE user SET UUID=? status=?, expires =?  WHERE id=?"
+	_, err := database.Exec(stm, uudi, status, expires, userId)
 	return err
 }
 
