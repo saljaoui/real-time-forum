@@ -16,6 +16,8 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/comment", handlers.Handel_GetCommet)
 	mux.HandleFunc("/api/card", handlers.GetCard_handler)
 	mux.HandleFunc("/api/isLogged", handlers.HandleIsLogged)
+	mux.Handle("/api/users", http.HandlerFunc(handlers.HandleUsersStatus))
+	mux.Handle("/api/messaging", http.HandlerFunc(handlers.HandleMessaging))
 	mux.Handle("/api/home", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.HomeHandle))))
 	mux.Handle("/api/likes", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.LikesHandle))))
 	mux.Handle("/api/profile/posts", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.HandleProfilePosts))))
