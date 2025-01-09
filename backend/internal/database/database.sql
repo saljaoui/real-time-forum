@@ -59,6 +59,15 @@ CREATE TABLE likes (
     FOREIGN KEY (card_id) REFERENCES card(id)
 );
 
+CREATE TABLE messasges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_id_receiver INTEGER,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
 INSERT INTO category (name) VALUES ('General');
 INSERT INTO category (name) VALUES ('Technology');
 INSERT INTO category (name) VALUES ('Sports');

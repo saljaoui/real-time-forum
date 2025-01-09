@@ -20,13 +20,23 @@ func emailExists(email string) bool {
 	return exists
 }
 
+// func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
+// 	status := "Offline"
+// 	if uudi != "null" {
+// 		status = "Online"
+// 	}
+// 	fmt.Println(status)
+// 	stm := "UPDATE user SET UUID=?, expires =?  WHERE id=?"
+// 	_, err := database.Exec(stm, uudi, expires, userId)
+// 	return err
+// }
+
 func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
 	status := "Offline"
-	if uudi != "" {
+	if uudi != "null" {
 		status = "Online"
 	}
-	fmt.Println(status)
-	stm := "UPDATE user SET UUID=? status=?, expires =?  WHERE id=?"
+	stm := "UPDATE user SET UUID=?, status=?, expires =?  WHERE id=?"
 	_, err := database.Exec(stm, uudi, status, expires, userId)
 	return err
 }

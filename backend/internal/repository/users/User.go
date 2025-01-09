@@ -153,7 +153,7 @@ func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Message
 			}
 			err = updateUUIDUser(uuid.String(), user.Id, time)
 			if err != nil {
-				fmt.Println("Error to Update")
+				fmt.Println("Error to Update in Auth")
 			}
 			return loged, messages.Messages{}, uuid
 		} else {
