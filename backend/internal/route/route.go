@@ -16,10 +16,14 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/card", handlers.GetCard_handler)
 	mux.HandleFunc("/api/isLogged", handlers.HandleIsLogged)
 
-	mux.HandleFunc("/api/auth", handlers.HandelStatus)
+	mux.HandleFunc("/ws", handlers.NewWS().HandleWebSocket)
+    // mux.HandleFunc("/api/messages/history", handlers.GetMessageHistory)
 
+	mux.HandleFunc("/api/auth", handlers.HandelStatus)
+	mux.HandleFunc("/api/ws",handlers.NewWS().HandleWebSocket)
 	mux.Handle("/api/users", http.HandlerFunc(handlers.HandleUsersStatus))
 	mux.Handle("/api/messaging", http.HandlerFunc(handlers.HandleMessaging))
+	// mux.Handle("/api/WS", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.NewWS().HandleWebSocket)))
 	mux.Handle("/api/reaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleReaction)))
 	mux.Handle("/api/getUserReaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlegetUserReaction)))
 	mux.Handle("/api/home", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HomeHandle)))

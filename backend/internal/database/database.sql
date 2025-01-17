@@ -65,13 +65,12 @@ CREATE TABLE likes (
 
 CREATE TABLE messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    content TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    user_id_receiver INTEGER,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (user_id_receiver) REFERENCES user(id)
-
+    sender_id INTEGER,
+    receiver_id INTEGER,
+    message TEXT NOT NULL,
+    sent_at TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES user(id),
+    FOREIGN KEY (receiver_id) REFERENCES user(id)
 );
 
 INSERT INTO category (name) VALUES ('General');
