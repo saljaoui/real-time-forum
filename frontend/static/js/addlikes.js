@@ -29,6 +29,5 @@ export function checkandAdd() {
             console.error("Error handling like/dislike:", error);
         }
     });
-
 }
 //checkandAdd()

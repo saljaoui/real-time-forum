@@ -31,8 +31,7 @@ type PostResponde struct {
 	Content      string `json:"content"`
 	Likes        int    `json:"likes"`
 	Dislikes     int    `json:"dislikes"`
-	UserLiked    int    `json:"userliked"`
-	Userdisliked int    `json:"userdisliked"`
+	UserReaction int    `json:"userReaction"`
 	Comments     string `json:"comments"`
 	CreatedAt    string `json:"createdat"`
 }
@@ -82,11 +81,14 @@ func GetPosts(query string) []PostResponde {
 			fmt.Println("er", err)
 			return nil
 		}
-		likes, dislikes, userliked, Userdisliked := like.GetLikes(post.Post_Id)
+
+		likes, dislikes := like.GetReactionCounts(post.Card_Id)
+		reaction := like.GetUserReaction(post.UserID, post.Card_Id)
+
 		post.Likes = likes
 		post.Dislikes = dislikes
-		post.UserLiked = userliked
-		post.Userdisliked = Userdisliked
+		post.UserReaction = reaction
+
 		posts = append(posts, post)
 	}
 	return posts

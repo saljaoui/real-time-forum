@@ -11,13 +11,33 @@ type Like struct {
 	User_Id      int  `json:"user_id"`
 	Card_Id      int  `json:"card_id"`
 	Is_Liked     int  `json:"is_liked"`
+	Is_disliked  int  `json:"is_disliked"`
 	UserLiked    bool `json:"userliked"`
 	Userdisliked bool `json:"userdisliked"`
 }
+
+type LikeRequest struct {
+	UserId int `json:"user_id"`
+    CardID     int `json:"cardId"`
+    ReactionType int `json:"reactionType"` // 1 for like, -1 for dislike, 0 for remove reaction
+}
+
+type LikeResponse struct {
+    LikesCount    int `json:"likesCount"`
+    DislikesCount int `json:"dislikesCount"`
+    UserReaction  int `json:"userReaction"`
+}
+
+type ReactionRequest struct {
+	CardID int `json:"cardId"`
+	UserReaction int `json:"userReaction"` // 1 for like, -1 for dislik
+}
+
 type DeletLikes struct {
 	User_Id int `json:"uuid"`
 	Card_Id int `json:"card_id"`
 }
+
 type ResponseUserLikeds struct {
 	UserLiked    bool
 	UserDisliked bool
@@ -45,17 +65,13 @@ func (l *Like) GetIsLike() int {
 	return l.Is_Liked
 }
 
-func (p *Like) Add() messages.Messages {
-	m := inserLike(p.User_Id, p.Card_Id, p.Is_Liked, p.UserLiked, p.Userdisliked)
+func (p *LikeRequest) AddReaction() messages.Messages {
+	m := inserReaction(p.UserId, p.CardID, p.ReactionType)
 	return m
 }
 
-func (p *DeletLikes) DeletLike() {
-	deletLike(p.User_Id, p.Card_Id)
-}
 
 func (like *Like) ChecklikesUser() []ResponseUserLikeds {
 	likes := GetuserLiked(like.Card_Id)
-	// fmt.Println(likes)
 	return likes
 }

@@ -2,6 +2,9 @@
 
 CREATE TABLE user(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nickname text   not NULL,
+    age text   not NULL,
+    gender text   not NULL,
     firstname text   not NULL,
     lastname text not NULL,
     email text not NULL UNIQUE,
@@ -51,21 +54,24 @@ CREATE TABLE comment (
 
 CREATE TABLE likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    card_id INTEGER,
-    is_like BOOLEAN,
-    UserLiked BOOLEAN,
-    Userdisliked BOOLEAN,
-    FOREIGN KEY (card_id) REFERENCES card(id)
+    user_id INTEGER NOT NULL,
+    card_id INTEGER NOT NULL,
+    reaction_type INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (card_id) REFERENCES card(id),
+    UNIQUE(user_id, card_id)
 );
 
-CREATE TABLE messasges (
+CREATE TABLE messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     user_id_receiver INTEGER,
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (user_id_receiver) REFERENCES user(id)
+
 );
 
 INSERT INTO category (name) VALUES ('General');

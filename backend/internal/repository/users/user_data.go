@@ -20,34 +20,22 @@ func emailExists(email string) bool {
 	return exists
 }
 
-// func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
-// 	status := "Offline"
-// 	if uudi != "null" {
-// 		status = "Online"
-// 	}
-// 	fmt.Println(status)
-// 	stm := "UPDATE user SET UUID=?, expires =?  WHERE id=?"
-// 	_, err := database.Exec(stm, uudi, expires, userId)
-// 	return err
-// }
-
 func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
-	status := "Offline"
-	if uudi != "null" {
-		status = "Online"
-	}
-	stm := "UPDATE user SET UUID=?, status=?, expires =?  WHERE id=?"
-	_, err := database.Exec(stm, uudi, status, expires, userId)
+	stm := "UPDATE user SET UUID=?, expires =?  WHERE id=?"
+	_, err := database.Exec(stm, uudi, expires, userId)
 	return err
 }
 
 func insertUser(users *User, password string) (sql.Result, error) {
+	Nickname := html.EscapeString(users.Nickname)
+	Age := html.EscapeString(users.Age)
+	Gender := html.EscapeString(users.Gender)
 	Firstname := html.EscapeString(users.Firstname)
 	Lastname := html.EscapeString(users.Lastname)
 	Email := strings.ToLower(html.EscapeString(users.Email))
 	Password := html.EscapeString(password)
-	stm := "INSERT INTO user (firstname,lastname,email,password) VALUES(?,?,?,?)"
-	row, err := database.Exec(stm, Firstname, Lastname, Email, Password)
+	stm := "INSERT INTO user (nickname,age,gender,firstname,lastname,email,password) VALUES(?,?,?,?,?,?,?)"
+	row, err := database.Exec(stm, Nickname, Age, Gender, Firstname, Lastname, Email, Password)
 	return row, err
 }
 
@@ -101,4 +89,25 @@ func getUserIdWithUUID(uuid string) (string, error) {
 		return "", err
 	}
 	return uuiduser, nil
+}
+
+func UpdateStatusUser(userID int, status string) error {
+	stm := "UPDATE user SET status=? WHERE id=?"
+	_, err := database.Exec(stm, status, userID)
+	return err
+}
+
+func SelectUserStatus(userID int) []UserStatusResponse {
+	list_Users := make([]UserStatusResponse, 0)
+	query := `SELECT u.id, u.firstname, u.lastname, u.status FROM user u WHERE NOT id =?`
+	data_Rows := database.SelectRows(query, userID)
+	for data_Rows.Next(){
+		Row := UserStatusResponse{}
+		err := data_Rows.Scan(&Row.Id,&Row.Firstname,&Row.Lastname,&Row.Status)
+		if err != nil {
+			return nil
+		}    
+		list_Users = append(list_Users, Row)
+	}
+	return list_Users
 }

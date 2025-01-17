@@ -1,19 +1,19 @@
-function createElementWithClass(type, classNames = '', textContent = '') {
-    let element = document.createElement(type);
+import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
+import { createDashboard } from '../main.js'
 
-    if (classNames) {
-        element.classList.add(classNames);
-    }
-
-    if (textContent) {
-        element.textContent = textContent;
-    }
-
-    return element;
+const userDataSingUp = {
+    nickName: '',
+    age: NaN,
+    firstName : '',
+    lastName: '',
+    email: '',
+    password: '',
+    gender: ''
 }
 
-function cleanUp(ele) {
-    ele.innerHTML = '';
+const userDatalogin = {
+    email: '',
+    password: '',
 }
 
 function createContainer() {
@@ -91,6 +91,9 @@ function createSignupForm() {
     const lastName = createFormGroup('Last Name');
     form.appendChild(lastName);
 
+    const genderGroup = createGenderField();
+    form.appendChild(genderGroup);
+
     const emailGroup = createFormGroup('Email', 'email');
     form.appendChild(emailGroup);
 
@@ -99,22 +102,125 @@ function createSignupForm() {
 
     const signUpBtn = createElementWithClass('button', 'sign-up-btn', 'SIGN UP');
     signUpBtn.type = 'submit';
+    handleSignUp(signUpBtn, nickName, age, firstName, lastName, emailGroup, passwordGroup, genderGroup);
     form.appendChild(signUpBtn);
 
     return form;
 }
 
+function createGenderField() {
+    const group = createElementWithClass('div', 'form-group');
+    
+    const select = createElementWithClass('select');
+
+    const optionGender = createElementWithClass('option');
+    optionGender.textContent = 'Select Gender';
+    select.appendChild(optionGender);
+    
+    const optionMale = createElementWithClass('option');
+    optionMale.value = 'Male';
+    optionMale.textContent = 'Male';
+    select.appendChild(optionMale);
+    
+    const optionFemale = createElementWithClass('option');
+    optionFemale.value = 'Female';
+    optionFemale.textContent = 'Female';
+    select.appendChild(optionFemale);
+
+    group.appendChild(select);
+    
+    return group;
+}
+
+
+function handleLogin(signInBtn, email, passwordGroup) {
+    signInBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        userDatalogin.email = email.querySelector('input').value;
+        userDatalogin.password = passwordGroup.querySelector('input').value;
+
+        fetchDataLogin()
+
+    })
+}
+
+
+function handleSignUp(signUpBtn, nickName, age, firstName, lastName, emailGroup, passwordGroup, genderGroup) {
+
+    signUpBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        userDataSingUp.nickName = nickName.querySelector('input').value;
+        userDataSingUp.age = age.querySelector('input').value;
+        userDataSingUp.firstName = firstName.querySelector('input').value;
+        userDataSingUp.lastName = lastName.querySelector('input').value;
+        userDataSingUp.email = emailGroup.querySelector('input').value;
+        userDataSingUp.password = passwordGroup.querySelector('input').value;
+        userDataSingUp.gender = genderGroup.querySelector('select').value;
+
+        fetchDataSignUp()
+
+    })
+}
+
+async function fetchDataSignUp() {
+    const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': 'application/json',
+        },
+
+        body: JSON.stringify({
+            nickName: userDataSingUp.nickName,
+            age: userDataSingUp.age,
+            firstname: userDataSingUp.firstName ,
+            lastname: userDataSingUp.lastName,
+            email: userDataSingUp.email,
+            password: userDataSingUp.password,
+            gender: userDataSingUp.gender
+        })
+    })
+    if (response.ok) {
+        const data = await response.json();
+        createDashboard()
+        console.log(data);
+    }
+}
+
+async function fetchDataLogin() {
+    
+    const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            email: userDatalogin.email,
+            password: userDatalogin.password
+        })
+    })
+    if (response.ok) {
+        const data = await response.json();
+        createDashboard()
+        console.log(data);
+    }
+}
+
 function createSigninForm() {
     const form = createElementWithClass('form');
 
-    const nickName = createFormGroup('Nickname');
-    form.appendChild(nickName);
+    const email = createFormGroup('email');
+    form.appendChild(email);
 
     const passwordGroup = createFormGroup('Password', 'password');
     form.appendChild(passwordGroup);
 
     const signUpBtn = createElementWithClass('button', 'sign-up-btn', 'SIGN IN');
     signUpBtn.type = 'submit';
+    handleLogin(signUpBtn, email, passwordGroup);
     form.appendChild(signUpBtn);
 
     return form;
@@ -167,7 +273,8 @@ function toggleToSignIn(loginSection, signupSection, container) {
     }, 250);
 }
 
-function buildPage() {
+export function buildLoginPage() {
+    let loginPage = createElementWithClass('section', 'login-page')
     const container = createContainer();
     const loginSection = createElementWithClass('div', 'login-section');
     const signupSection = createElementWithClass('div', 'signup-section');
@@ -177,11 +284,10 @@ function buildPage() {
     const signUpBtn = createLoginSection(loginSection);
     createSignupSection(signupSection);
 
-    document.body.appendChild(container);
+    loginPage.appendChild(container);
+    document.body.appendChild(loginPage)
 
     signUpBtn.addEventListener('click', () => {
         toggleToSignUp(loginSection, signupSection, container);
     });
 }
-
-buildPage();

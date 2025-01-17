@@ -1,38 +1,79 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
+	"sync"
+	"time"
+
+	users "forum-project/backend/internal/repository/users"
 
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func HandleUsersStatus(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader2.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println("Error upgrading:", err)
+		http.Error(w, "WebSocket upgrade failed", http.StatusInternalServerError)
 		return
 	}
 	defer conn.Close()
-	// Listen for incoming messages
+
+	userId := GetUserId(r)
+
+	// Use defer for cleanup to ensure it happens in all cases
+	defer func() {
+		updateUserStatus(userId, false)
+		usersConnMu.Lock()
+		delete(usersConn, userId)
+		usersConnMu.Unlock()
+	}()
+
+	// Register connection with proper error handling
+	if err := updateUserStatus(userId, true); err != nil {
+		return
+	}
+
+	usersConnMu.Lock()
+	usersConn[userId] = conn
+	usersConnMu.Unlock()
+
+	// Add ping/pong handlers for connection health
+	conn.SetPingHandler(func(string) error {
+		return conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(time.Second))
+	})
+
+	// Message handling loop with timeout
 	for {
-		// Read message from the client
-		_, message, err := conn.ReadMessage()
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		messageType, _, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Error reading message:", err)
-			break
+			return
 		}
-		fmt.Printf("Received: %s\\n", message)
-		// Echo the message back to the client
-		if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
-			fmt.Println("Error writing message:", err)
-			break
+
+		usersStatus := users.SelectUserStatus(userId)
+		responseJson, err := json.Marshal(usersStatus)
+		if err != nil {
+			continue
+		}
+
+		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		if err := conn.WriteMessage(messageType, responseJson); err != nil {
+			return
 		}
 	}
+}
+
+var dbMutex sync.Mutex
+
+func updateUserStatus(userID int, online bool) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	status := "offline"
+	if online {
+		status = "online"
+	}
+
+	return users.UpdateStatusUser(userID, status)
 }

@@ -46,7 +46,6 @@ await fetchdata()
 async function GetComments() {
     let path = window.location.pathname
     if (path !== "/comment") {
-
         return ""
     } else {
         const response = await fetch(`/api/comment?target_id=${cardData}`, {

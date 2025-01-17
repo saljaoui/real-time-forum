@@ -58,9 +58,9 @@ async function InitialComment(ele, comments) {
         comments.appendChild(div)
         return { data: data.content, element: div }
     })
- 
+
     let like = document.querySelectorAll("#likes");
-     likes(like)
+    likes(like)
     }
 }
 

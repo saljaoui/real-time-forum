@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -15,15 +14,23 @@ import (
 
 type User struct {
 	Id        int64     `json:"id"`
+	Nickname  string    `json:"nickName"`
+	Age       string    `json:"age"`
+	Gender    string    `json:"gender"`
 	Firstname string    `json:"firstname"`
 	Lastname  string    `json:"lastname"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdat"`
 	UUID      uuid.UUID `json:"uuid"`
+	Status      uuid.UUID `json:"status"`
+
 }
 type ResponceUser struct {
 	Id        int64  `json:"id"`
+	Nickname  string `json:"nickName"`
+	Age       string `json:"age"`
+	Gender    string `json:"gender"`
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
@@ -35,6 +42,14 @@ type Login struct {
 	UUID     string `json:"uuid"`
 	Password string `json:"password"`
 }
+
+type UserStatusResponse struct {
+	Id        int64  `json:"id"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Status    string `json:"status"`
+}
+
 type UUID struct {
 	Iduser int
 }
@@ -60,6 +75,9 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 		Email:     users.Email,
 		Firstname: users.Firstname,
 		Lastname:  users.Lastname,
+		Nickname:  users.Nickname,
+		Age:       users.Age,
+		Gender:    users.Gender,
 	}
 
 	if strings.Trim(users.Firstname, " ") == "" || strings.Trim(users.Email, " ") == "" ||
@@ -68,11 +86,10 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 		return ResponceUser{}, message, ""
 	}
 
-	message = users.validateUser()
-	if message.MessageError != "" {
-		return ResponceUser{}, message, ""
-	}
-	
+	// message = users.validateUser()
+	// if message.MessageError != "" {
+	// 	return ResponceUser{}, message, ""
+	// }
 
 	checkemail := strings.ToLower(users.Email)
 	exists := emailExists(checkemail)
@@ -103,33 +120,33 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 	return loged, message, uuid
 }
 
-func (users *User) validateUser() messages.Messages {
-	message := messages.Messages{}
+// func (users *User) validateUser() messages.Messages {
+// 	message := messages.Messages{}
 
-	nameRegex := regexp.MustCompile(`^[A-Za-z]{2,}$`)
-    if !nameRegex.MatchString(strings.TrimSpace(users.Firstname)) {
-        message.MessageError = "Invalid First name"
-        return message
-    }
-    
-    if !nameRegex.MatchString(strings.TrimSpace(users.Lastname)) {
-        message.MessageError = "Invalid Last name"
-        return message
-    }
+// 	nameRegex := regexp.MustCompile(`^[A-Za-z]{2,}$`)
+//     if !nameRegex.MatchString(strings.TrimSpace(users.Firstname)) {
+//         message.MessageError = "Invalid First name"
+//         return message
+//     }
 
-	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`)
-	if !emailRegex.MatchString(strings.ToLower(users.Email)) {
-		message.MessageError = "Invalid email format"
-		return message
-	}
+//     if !nameRegex.MatchString(strings.TrimSpace(users.Lastname)) {
+//         message.MessageError = "Invalid Last name"
+//         return message
+//     }
 
-	if len(users.Password) < 8 {
-		message.MessageError = "Invalis password length less than 8"
-		return message
-	}
+// 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`)
+// 	if !emailRegex.MatchString(strings.ToLower(users.Email)) {
+// 		message.MessageError = "Invalid email format"
+// 		return message
+// 	}
 
-	return message
-}
+// 	if len(users.Password) < 8 {
+// 		message.MessageError = "Invalis password length less than 8"
+// 		return message
+// 	}
+
+// 	return message
+// }
 
 func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Messages, uuid.UUID) {
 	message := messages.Messages{}

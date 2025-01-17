@@ -27,7 +27,6 @@ async function creatPost(categoriesSelected) {
              alertPopup(data)
          }
         //console.log(response);
-    
 }
 export {
     creatPost

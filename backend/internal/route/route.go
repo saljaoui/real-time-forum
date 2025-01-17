@@ -16,16 +16,17 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/comment", handlers.Handel_GetCommet)
 	mux.HandleFunc("/api/card", handlers.GetCard_handler)
 	mux.HandleFunc("/api/isLogged", handlers.HandleIsLogged)
+	mux.HandleFunc("/api/reaction", handlers.HandleReaction)
+	mux.HandleFunc("/api/getUserReaction", handlers.HandlegetUserReaction)
+	mux.HandleFunc("/api/auth", handlers.HandelStatus)
+
 	mux.Handle("/api/users", http.HandlerFunc(handlers.HandleUsersStatus))
 	mux.Handle("/api/messaging", http.HandlerFunc(handlers.HandleMessaging))
 	mux.Handle("/api/home", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.HomeHandle))))
-	mux.Handle("/api/likes", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.LikesHandle))))
 	mux.Handle("/api/profile/posts", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.HandleProfilePosts))))
 	mux.Handle("/api/profile/likes", handlers.AuthenticateMiddleware((http.HandlerFunc(handlers.HandleProfileLikes))))
 	mux.Handle("/api/post", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlePost)))
 	mux.Handle("/api/addcomment", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.Handler_AddComment)))
-	mux.Handle("/api/like", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandelLike)))
-	mux.Handle("/api/deleted", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandelDeletLike)))
 	mux.Handle("/api/logout", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleLogOut)))
 }
 
@@ -50,9 +51,13 @@ func SetupPageRoutes(mux *http.ServeMux) {
 
 		allowedFiles := map[string]bool{
 			"css/alert.css":       true,
+			"css/style.css":       true,
 			"css/styles.css":      true,
 			"imgs/logo.png":       true,
+			"imgs/s.png":       true,
 			"imgs/profilePic.png": true,
+			"imgs/guest.png": true,
+
 		}
 
 		if !allowedFiles[suffix] {
@@ -70,6 +75,11 @@ func SetupPageRoutes(mux *http.ServeMux) {
 			http.Redirect(w, r, "/home", http.StatusSeeOther)
 		}
 	})
+	
+	mux.HandleFunc("/diprela", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "../../frontend/templates/index.html")
+	})
+
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		cookies, err := r.Cookie("token")
 		if err != nil || cookies == nil {
@@ -82,6 +92,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		validatePath(w, r)
 	})
+
 	mux.HandleFunc("/about", checkCookies)
 	mux.HandleFunc("/categories", checkCookies)
 	mux.HandleFunc("/contact", checkCookies)
@@ -124,6 +135,7 @@ func validatePath(w http.ResponseWriter, r *http.Request) {
 		"/profile",
 		"/settings",
 		"/err",
+		"/diprela",
 	}
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/home", http.StatusFound)

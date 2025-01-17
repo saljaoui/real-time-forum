@@ -75,9 +75,9 @@ func GetAllCards() []card_View {
 	return list_Cards
 }
 
-func GetAllCardsForPages(page int, postsPerPage int) ([]Card_View_Data, int) {
-	return getAllCardsForPages(page, postsPerPage)
-}
+// func GetAllCardsForPages(page int, postsPerPage int) ([]Card_View_Data, int) {
+// 	return getAllCardsForPages(page, postsPerPage)
+// }
 
 func convert(data_Row Card_View_Data) card_View {
 	card := card_View{}

@@ -13,22 +13,25 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	defer r.Body.Close()
 	var user repository.User
 	decode := DecodeJson(r)
 	decode.DisallowUnknownFields()
+
 	err := decode.Decode(&user)
 	if err != nil {
 		JsoneResponse(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	timeex := time.Now().Add(5 * time.Hour).UTC()
 	userRegiseter, message, uuid := user.Register(timeex)
 	if message.MessageError != "" {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-
+  
 	SetCookie(w, "token", uuid, timeex)
 	JsoneResponse(w, r, userRegiseter, http.StatusOK)
 }

@@ -7,15 +7,16 @@ async function checklogin() {
         let aside_nav = document.querySelector(".aside-nav");
         aside_nav.style.display = "block";
         let join = document.querySelector(".join");
-        join.style.display = "none";
-        while (join.firstChild) {
-            join.removeChild(join.firstChild);
-        }
+        // join.style.display = "none";
+        // while (join.firstChild) {
+        //     join.removeChild(join.firstChild);
+        // }
         if (window.location.reload) {
             const response = await fetch("/api/isLogged", {
                 method: "GET",
             })
             let data = await response.json()
+            
             if (!data) {
                 const cookies = document.cookie.split(";");
                 for (let i = 0; i < cookies.length; i++) {

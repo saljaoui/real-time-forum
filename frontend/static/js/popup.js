@@ -7,7 +7,7 @@ async function classes() {
     if (document.cookie != "") {
         let path = window.location.pathname
         const creategategory = document.querySelector(".postReply")
-        const creatPostPopup = document.getElementById('creatPost-popup')//categories-popup
+        const creatPostPopup = document.getElementById('creatPost-popup')
         const post_close = document.querySelector('.post-close')
         const comment = document.querySelector(".create-comment")
         const categoryItems = document.querySelectorAll('.category-item');

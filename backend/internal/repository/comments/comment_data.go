@@ -47,7 +47,7 @@ func getAllCommentsbyTargetId(target int) []comment_Row_View {
 	list_Comments := make([]comment_Row_View, 0)
 	query := `SELECT c.id,c.user_id,c.content,c.created_at,
 	u.firstname,u.lastname, (SELECT count(*) FROM comment cm
-	 WHERE cm.target_id = c.id) comments,(SELECT count(*) FROM likes l WHERE l.card_id = c.id and l.is_like = 1) likes , (SELECT count(*) FROM likes l WHERE l.card_id = c.id and l.is_like = -1) dislikes
+	 WHERE cm.target_id = c.id) comments,(SELECT count(*) FROM likes l WHERE l.card_id = c.id and l.reaction_type = 1) likes , (SELECT count(*) FROM likes l WHERE l.card_id = c.id and l.reaction_type = -1) dislikes
 			FROM card c  JOIN comment cm ON c.id = cm.card_id JOIN user u ON c.user_id = u.id
 			WHERE cm.target_id = ? 
 			GROUP BY c.id ORDER BY c.id DESC;`

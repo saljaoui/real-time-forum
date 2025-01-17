@@ -20,14 +20,9 @@ func Handel_GetCommet(res http.ResponseWriter, req *http.Request) {
 		JsoneResponse(res, req, "Status Bad Request", http.StatusBadRequest)
 		return
 	}
+
 	comments := comment.GetAllCommentsbyTarget(id)
-	if len(comments) == 0 {
-		return
-	}
-	if comments == nil {
-		JsoneResponse(res, req, "Status Not Found", http.StatusNotFound)
-		return
-	}
+
 	json.NewEncoder(res).Encode(comments)
 }
 

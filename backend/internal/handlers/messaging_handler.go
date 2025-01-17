@@ -3,13 +3,23 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	messagings "forum-project/backend/internal/repository/messaging"
 	"net/http"
+	"sync"
+
+	messagings "forum-project/backend/internal/repository/messaging"
 
 	"github.com/gorilla/websocket"
 )
 
+var (
+	usersConn   = make(map[int]*websocket.Conn)
+	usersConnMu sync.Mutex
+)
+
 var upgrader2 = websocket.Upgrader{
+	ReadBufferSize:   1024,
+	WriteBufferSize:  1024,
+	HandshakeTimeout: 500,
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
@@ -22,27 +32,73 @@ func HandleMessaging(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-	// Listen for incoming messages
+
+	userId := GetUserId(r)
+	
+	// Register connection
+	usersConnMu.Lock()
+	usersConn[userId] = conn
+	usersConnMu.Unlock()
+
+	// Ensure user is removed from the map when they disconnect
+	defer func() {
+		usersConnMu.Lock()
+		delete(usersConn, userId)
+		usersConnMu.Unlock()
+		fmt.Println("User disconnected:", userId)
+	}()
+
+	// Message handling loop
 	for {
-		// Read message from the client
-		_, message, err := conn.ReadMessage()
+		messageType, message, err := conn.ReadMessage()
 		if err != nil {
 			fmt.Println("Error reading message:", err)
 			break
 		}
+
 		var msg messagings.Messaging
-		err = json.Unmarshal(message, &msg)
-		if err != nil {
-			fmt.Println(err.Error())
+		if err := json.Unmarshal(message, &msg); err != nil {
+			fmt.Println("Error unmarshaling JSON:", err)
+			continue
 		}
+
+		// Assign sender ID
+		msg.Sender_id = userId
+
+		// Validate recipient user
+		if !messagings.CheckUser(msg.Reciever_id) {
+			fmt.Println("Recipient user does not exist:", msg.Reciever_id)
+			continue
+		}
+
+		// Store message in database
 		msg.AddMessage()
-		// fmt.Println(message)
-		fmt.Println(msg.User_id)
-		// fmt.Printf("Received: %s\\n", message)
-		// Echo the message back to the client
-		if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
-			fmt.Println("Error writing message:", err)
+
+		// Send message back to sender
+		msg.Type = "sender"
+		responseJson, err := json.Marshal(msg)
+		if err != nil {
+			fmt.Println("Error marshaling JSON:", err)
+			continue
+		}
+
+		if err := conn.WriteMessage(messageType, responseJson); err != nil {
+			fmt.Println("Error writing message to sender:", err)
 			break
+		}
+
+		// Send message to recipient if they're online
+		usersConnMu.Lock()
+		recieveConn, exists := usersConn[msg.Reciever_id]
+		usersConnMu.Unlock()
+
+		if exists {
+			msg.Type = "receiver"
+			reciverJson, _ := json.Marshal(msg)
+
+			if err := recieveConn.WriteMessage(messageType, reciverJson); err != nil {
+				fmt.Println("Error writing message to receiver:", err)
+			}
 		}
 	}
 }

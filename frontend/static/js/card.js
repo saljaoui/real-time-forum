@@ -3,6 +3,7 @@ export function cards(data,user_info) {
     if(user_info===null) {
       return
     }
+
     user_info.innerHTML = "";
     if(data===null){return ""}
     content = data.map((ele) => {

@@ -23,7 +23,7 @@ func main() {
 	route.SetupPageRoutes(mux)
 
 	serverAddr := ":3333"
-	log.Printf("Server running at http://localhost%s/home\n", serverAddr)
+	log.Printf("Server running at http://localhost%s/diprela\n", serverAddr)
 	err := http.ListenAndServe(serverAddr, mux)
 	if err != nil {
 		log.Fatal("ListenAndServe Error: ", err)

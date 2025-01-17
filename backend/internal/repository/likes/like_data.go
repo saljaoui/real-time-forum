@@ -2,36 +2,73 @@ package like
 
 import (
 	"fmt"
-	"strconv"
 
+	"database/sql"
 	messages "forum-project/backend/internal/Messages"
 	"forum-project/backend/internal/database"
 )
 
-func inserLike(user_id, card_id, is_liked int, UserLiked, Userdisliked bool) (m messages.Messages) {
-	if likeExists(user_id, card_id) {
-		query := `DELETE FROM likes WHERE user_id = ? AND card_id = ?`
-		_, err := database.Exec(query, user_id, card_id)
+func inserReaction(UserID, CardID, ReactionType int) (m messages.Messages) {
+
+	existingReaction := isReactionExists(UserID, CardID)
+
+	if existingReaction == ReactionType {
+		query := `
+            DELETE FROM likes
+            WHERE user_id = ? AND card_id = ?
+        `
+		_, err := database.Exec(query, UserID, CardID)
 		if err != nil {
-			fmt.Println(err.Error())
+			m.MessageError = "Error removing reaction: " + err.Error()
+			return m
 		}
+		m.MessageSucc = "Reaction removed"
+		return m
 	}
-	query := "INSERT INTO likes(user_id, card_id, is_like, UserLiked, Userdisliked) VALUES(?,?,?,?,?);"
-	_, err := database.Exec(query, user_id, card_id, is_liked, UserLiked, Userdisliked)
+
+	if existingReaction == 0 {
+		query := `
+            INSERT INTO likes (user_id, card_id, reaction_type)
+            VALUES (?, ?, ?)
+        `
+		_, err := database.Exec(query, UserID, CardID, ReactionType)
+		if err != nil {
+			m.MessageError = "Error adding reaction: " + err.Error()
+			return m
+		}
+		m.MessageSucc = "Reaction added"
+		return m
+	}
+
+	query := `
+        UPDATE likes
+        SET reaction_type = ?
+        WHERE user_id = ? AND card_id = ?
+    `
+	_, err := database.Exec(query, ReactionType, UserID, CardID)
 	if err != nil {
-		fmt.Println(err.Error())
+		m.MessageError = "Error updating reaction: " + err.Error()
+		return m
 	}
-	m.MessageSucc = "is liked"
+
+	m.MessageSucc = "Reaction updated"
 	return m
 }
 
-func deletLike(user_id, card_id int) {
-	query := "DELETE FROM likes WHERE user_id=? AND card_id=?"
-	_, err := database.Exec(query, user_id, card_id)
-	if err != nil {
-		 
-		fmt.Println(err.Error(), "test")
+func isReactionExists(UserID, CardID int) int {
+	var existingReaction int
+	query := `
+        SELECT reaction_type FROM likes 
+        WHERE user_id = ? AND card_id = ?
+    `
+	err := database.SelectOneRow(query, UserID, CardID).Scan(&existingReaction)
+	if err == sql.ErrNoRows {
+		return 0
 	}
+	if err != nil {
+		return 0
+	}
+	return existingReaction
 }
 
 func GetuserLiked(card_id int) []ResponseUserLikeds {
@@ -51,36 +88,38 @@ func GetuserLiked(card_id int) []ResponseUserLikeds {
 	return likesusers
 }
 
-func GetLikes(post_id int) (int, int, int, int) {
-	querylike := `SELECT  COALESCE(UserLiked,0), COALESCE(Userdisliked,0) , COALESCE(SUM(l.is_like), 0)  FROM post
-	 p, likes l WHERE p.card_id = l.card_id AND l.is_like = 1 AND p.id = ` + strconv.Itoa(post_id)
-	like := 0
-	UserLiked := 0
-	UserdiLiked := 0
-	Userdisliked := 0
-	db := database.Config()
-	err := db.QueryRow(querylike).Scan(&UserLiked, &Userdisliked, &like)
+func GetReactionCounts(CardID int) (likes, dislikes int) {
+	query := `
+        SELECT 
+            SUM(reaction_type = 1) as likes_count,
+            SUM(reaction_type = -1) as dislikes_count
+        FROM likes
+        WHERE card_id = ?
+    `
+	err := database.SelectOneRow(query, CardID).Scan(&likes, &dislikes)
 	if err != nil {
-		fmt.Println(err)
-		like = 0
+		return 0, 0
 	}
-	querydislike := `SELECT COALESCE(UserLiked,0) ,COALESCE(Userdisliked,0) , COALESCE(SUM(l.is_like), 0) FROM 
-	post p, likes l WHERE p.card_id = l.card_id AND l.is_like = -1 AND p.id = ` + strconv.Itoa(post_id)
-	dislike := 0
-
-	err = db.QueryRow(querydislike).Scan(&UserdiLiked, &Userdisliked, &dislike)
-	if err != nil {
-		dislike = 0
-	}
-	return like, dislike * -1, UserLiked, Userdisliked
+	return likes, dislikes
 }
 
-func likeExists(user_id, card_id int) bool {
-	var exists bool
-	query := "SELECT EXISTS (select is_like from likes where user_id = ? AND card_id = ?)"
-	err := database.SelectOneRow(query, user_id, card_id).Scan(&exists)
-	if err != nil {
-		fmt.Println("Error exist Like", err)
+func GetUserReaction(userID, cardID int) int {
+	query := `
+        SELECT reaction_type
+        FROM likes 
+        WHERE user_id = ? AND card_id = ?
+        LIMIT 1
+    `
+
+	var reactionType int
+	err := database.SelectOneRow(query, userID, cardID).Scan(&reactionType)
+
+	if err == sql.ErrNoRows {
+		return 0
 	}
-	return exists
+	if err != nil {
+		return 0
+	}
+
+	return reactionType
 }
