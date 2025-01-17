@@ -78,6 +78,8 @@ func (ws *WS) readLoop(userId int) {
 		msg.SenderId = userId
 		msg.Timestamp = time.Now()
 
+		fmt.Println(msg)
+		
 		// Handle different message types
 		switch msg.Type {
 		case "message":
@@ -90,7 +92,7 @@ func (ws *WS) readLoop(userId int) {
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	// Store message in database here
-	
+
 	msg.AddMessages()
 
 	// Send to recipient if online
