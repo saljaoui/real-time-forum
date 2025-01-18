@@ -22,7 +22,6 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/api/auth", handlers.HandelStatus)
 	// mux.Handle("/api/users", http.HandlerFunc(handlers.HandleUsersStatus))
-	mux.Handle("/api/messaging", http.HandlerFunc(handlers.HandleMessaging))
 	mux.Handle("/api/reaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleReaction)))
 	mux.Handle("/api/getUserReaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlegetUserReaction)))
 	mux.Handle("/api/home", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HomeHandle)))

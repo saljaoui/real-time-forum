@@ -46,7 +46,6 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws.usersConn[userId] = conn
 	ws.mu.Unlock()
 
-	// Handle connection closure
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
