@@ -9,7 +9,7 @@ const msg = {
 };
 
 socket.onopen = (event) => {
-    console.log('Connected to the server', event.data);
+    console.log('Connected to the server');
 }
 
 socket.onmessage = (event) => {
