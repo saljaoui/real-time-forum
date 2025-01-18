@@ -33,9 +33,11 @@ export async function createDashboard() {
     let data = await fetchDataPosts()    
     postCard(data, mainContent)
 
+    const sidebar = await rightSidebar();
+
     dashboard.appendChild(leftSidebar());
     dashboard.appendChild(mainContent);
-    dashboard.appendChild(rightSidebar());
+    dashboard.appendChild(sidebar);
     document.body.appendChild(dashboard);
 }
 

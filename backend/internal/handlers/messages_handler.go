@@ -46,15 +46,12 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws.usersConn[userId] = conn
 	ws.mu.Unlock()
 
-	ws.broadcastUserStatus(userId, true)
-
 	// Handle connection closure
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
 		ws.mu.Unlock()
-		ws.broadcastUserStatus(userId, false)
 	}()
 
 	ws.readLoop(userId)
@@ -80,57 +77,22 @@ func (ws *WS) readLoop(userId int) {
 
 		fmt.Println(msg)
 		
-		// Handle different message types
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
-		case "typing":
-			ws.handleTypingNotification(msg)
 		}
 	}
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
-	// Store message in database here
 
 	msg.AddMessages()
 
-	// Send to recipient if online
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
 		err := recipientConn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("Error sending message to user %d: %v", msg.ReceiverId, err)
-		}
-	}
-	ws.mu.RUnlock()
-}
-
-func (ws *WS) handleTypingNotification(msg messagings.Message) {
-	ws.mu.RLock()
-	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
-		err := recipientConn.WriteJSON(msg)
-		if err != nil {
-			log.Printf("Error sending typing notification to user %d: %v", msg.ReceiverId, err)
-		}
-	}
-	ws.mu.RUnlock()
-}
-
-func (ws *WS) broadcastUserStatus(userId int, online bool) {
-	statusMsg := messagings.Message{
-		Type:      "status",
-		SenderId:  userId,
-		Content:   fmt.Sprintf("%v", online),
-		Timestamp: time.Now(),
-	}
-
-	ws.mu.RLock()
-	for _, conn := range ws.usersConn {
-		fmt.Println(statusMsg)
-		err := conn.WriteJSON(statusMsg)
-		if err != nil {
-			log.Printf("Error broadcasting status: %v", err)
 		}
 	}
 	ws.mu.RUnlock()
