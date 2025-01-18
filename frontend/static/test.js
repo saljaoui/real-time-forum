@@ -1,18 +1,15 @@
-const socket = new WebSocket('ws://localhost:3333/ws');
-console.log("webSocket");
+// const socket = new WebSocket('ws://localhost:3333/ws');
 
-const msg = {
-    type: "message",
-    senderId: 1,
-    receiverId: 2,
-    Content:'soufian is OK',
-    Timestamp: Date.now(),
-};
+// const msg = {
+//   type: "message",
+//   receiverId: 2,
+//   content: 'Soufian is good',
+// };
 
-socket.send(JSON.stringify(msg));
-socket.onmessage = (event) => {
-    console.log(event.data);
-  };
+// socket.onopen = () => {
+//   console.log("WebSocket connected!");
+//   socket.send(JSON.stringify(msg));
+// };
 
 // this for closing the connection
 // socket.close();
