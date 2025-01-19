@@ -2,15 +2,32 @@ package user
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	messages "forum-project/backend/internal/Messages"
+	"forum-project/backend/internal/database"
 
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type UserStatusResponse struct {
+	ID        int       `json:"id"`
+	Nickname  string    `json:"nickname"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Status    string    `json:"status"`
+	LastSeen  time.Time `json:"lastSeen,omitempty"`
+	Email     string    `json:"email"`
+}
+
+type Status struct {
+	Type        string               `json:"type"` // "message", "status", "typing", etc.
+	UsersStatus []UserStatusResponse `json:"usersStatus"`
+}
 
 type User struct {
 	Id        int64     `json:"id"`
@@ -23,8 +40,7 @@ type User struct {
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdat"`
 	UUID      uuid.UUID `json:"uuid"`
-	Status      uuid.UUID `json:"status"`
-
+	Status    uuid.UUID `json:"status"`
 }
 type ResponceUser struct {
 	Id        int64  `json:"id"`
@@ -41,13 +57,6 @@ type Login struct {
 	Email    string `json:"email"`
 	UUID     string `json:"uuid"`
 	Password string `json:"password"`
-}
-
-type UserStatusResponse struct {
-	Id        int64  `json:"id"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Status    string `json:"status"`
 }
 
 type UUID struct {
@@ -231,4 +240,56 @@ func (u *UUID) UUiduser(uuid string) (m messages.Messages) {
 	}
 	u.Iduser = id_user
 	return m
+}
+
+func GetUsersStatus(userId int) []UserStatusResponse {
+	db := database.Config()
+
+	query := `
+		SELECT 
+			id,
+			nickname,
+			firstname,
+			lastname,
+			email,
+			status
+		FROM user
+		ORDER BY 
+			CASE 
+				WHEN status = 'online' THEN 1
+				ELSE 2
+			END,
+			nickname ASC`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil
+	}
+	defer rows.Close()
+
+	var users []UserStatusResponse
+	for rows.Next() {
+		var user UserStatusResponse
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Nickname,
+			&user.FirstName,
+			&user.LastName,
+			&user.Email,
+			&user.Status,
+		)
+		if err != nil {
+			log.Printf("Row scan error: %v", err)
+			continue
+		}
+
+		if user.Status == "" {
+			user.Status = "offline"
+		}
+
+		users = append(users, user)
+	}
+	return users
 }

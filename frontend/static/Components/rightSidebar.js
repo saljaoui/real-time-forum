@@ -1,7 +1,9 @@
 import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 
+
 const socket = new WebSocket('ws://localhost:3333/ws');
 
+let attendeeslist;
 const msg = {
     type: "message",
     receiverId: 0,
@@ -13,14 +15,27 @@ socket.onopen = (event) => {
 }
 
 socket.onmessage = (event) => {
+    
     let messagesArea = document.querySelector('.messages-area');
     const receivedData = JSON.parse(event.data);
-    const messageElement = createMessageElement(receivedData.content, 'message-container received');
-    messagesArea.appendChild(messageElement);
-    console.log(event.data);
+    console.log(receivedData.type);
+    if (receivedData.type == 'message') {
+        const messageElement = createMessageElement(receivedData.content, 'message-container received');
+        messagesArea.appendChild(messageElement);
+    } else if (receivedData.type == 'status') {
+        createUsers(receivedData.usersStatus)        
+    }    
 };
 
+export function closeSocket() {
+    msg.type = 'status'
+    socket.send(JSON.stringify(msg));
+    socket.close();  // This will send a close frame to the server
+    console.log('WebSocket connection is closing...');
+}
+
 export async function rightSidebar() {
+
     const sidebarRight = createElementWithClass('div', 'sidebar-right');
     
     const topBar = createElementWithClass('div', 'top-bar');
@@ -32,14 +47,15 @@ export async function rightSidebar() {
     const users = createElementWithClass('div', 'users');
     const usersHeader = createElementWithClass('div', 'users-header', 'Users');
     const attendeesList = createElementWithClass('div', 'attendees-list');
-    
+    attendeeslist = attendeesList
     users.appendChild(usersHeader);
     users.appendChild(attendeesList);
     
     try {
         const response = await fetch('http://localhost:3333/api/users/status');
         const usersData = await response.json();
-
+        msg.type = 'status'
+        socket.send(JSON.stringify(msg));
         usersData.forEach(user => {
             console.log(user);
             
@@ -77,6 +93,38 @@ export async function rightSidebar() {
 
     return sidebarRight;
 }
+
+function createUsers(usersData) {    
+    attendeeslist.innerHTML = '';
+        usersData.forEach(user => {
+            console.log(user);
+            
+            const userElement = createElementWithClass('div', 'user');
+            userElement.setAttribute('senderId', user.id);
+            
+            const avatar = createElementWithClass('div', 'user-avatar');
+
+            const userInfo = createElementWithClass('div', 'user-info');
+            const userName = createElementWithClass('div', 'user-name');
+            userName.textContent = `${user.firstName} ${user.lastName}`;
+            
+            const userEmail = createElementWithClass('div', 'user-email');
+            userEmail.textContent = user.email;
+            
+            const userStatus = createElementWithClass('div', 'user-status');
+            userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
+
+            userInfo.appendChild(userName);
+            userInfo.appendChild(userEmail);
+            userElement.appendChild(avatar);
+            userElement.appendChild(userStatus);
+            userElement.appendChild(userInfo);
+            
+            addEventListenerToUser(userElement);
+            attendeeslist.appendChild(userElement);
+        })
+}
+
 function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
         const senderId = userElement.getAttribute('senderId');

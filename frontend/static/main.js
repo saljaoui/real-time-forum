@@ -6,6 +6,8 @@ import { createProfileSection } from './Components/profileSection.js';
 import { createCategories } from './Components/categoriesSection.js';
 import { buildLoginPage } from './Components/loginSection.js';
 import { commentCard } from './Components/commentSection.js';
+import { closeSocket } from './Components/rightSidebar.js';
+
 
 import { handleAuthCheck } from './utils/utils.js';
 
@@ -60,6 +62,7 @@ export async function switchSection(navItemName) {
         mainContent.appendChild(createCategories());
 
     } else if (navItemName === "Log out") {
+        closeSocket()
         logout()
         cleanCards(".dashboard")
         buildLoginPage()

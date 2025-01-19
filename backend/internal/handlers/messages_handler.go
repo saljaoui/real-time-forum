@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
 	messagings "forum-project/backend/internal/repository/messaging"
+	repository "forum-project/backend/internal/repository/users"
+
 
 	"github.com/gorilla/websocket"
 )
-
-
 
 type WS struct {
 	upgrader  websocket.Upgrader
@@ -42,14 +43,17 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	userId := GetUserId(r)
 
+	var sts repository.Status
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
+	// ws.handleStatusUsers(sts, userId)
 	ws.mu.Unlock()
-
+	fmt.Println("heeeeeeeer")
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
+		ws.handleStatusUsers(sts, userId)
 		ws.mu.Unlock()
 	}()
 
@@ -57,6 +61,7 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WS) readLoop(userId int) {
+	// var sts repository.Status
 	ws.mu.RLock()
 	conn := ws.usersConn[userId]
 	ws.mu.RUnlock()
@@ -75,25 +80,41 @@ func (ws *WS) readLoop(userId int) {
 		msg.Timestamp = time.Now()
 
 		fmt.Println(msg)
-		
+
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
+			// case "status":
+			// 	ws.handleStatusUsers(sts, userId)
 		}
 	}
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
-
 	msg.AddMessages()
 
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
-		
+
 		err := recipientConn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("Error sending message to user %d: %v", msg.ReceiverId, err)
 		}
 	}
 	ws.mu.RUnlock()
+}
+
+func (ws *WS) handleStatusUsers(sts repository.Status, userId int) {
+	users := repository.GetUsersStatus(userId)
+	sts.Type = "status"
+	sts.UsersStatus = users
+	for _, v := range ws.usersConn {
+		if v != ws.usersConn[userId] {
+			fmt.Println(v)
+			err := v.WriteJSON(sts)
+			if err != nil {
+				log.Printf("Error updating status")
+			}
+		}
+	}
 }

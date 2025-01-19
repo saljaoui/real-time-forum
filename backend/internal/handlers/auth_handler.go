@@ -24,14 +24,13 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 	timeex := time.Now().Add(5 * time.Hour).UTC()
 	userRegiseter, message, uuid := user.Register(timeex)
 	if message.MessageError != "" {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-  
+
 	SetCookie(w, "token", uuid, timeex)
 	JsoneResponse(w, r, userRegiseter, http.StatusOK)
 }
@@ -56,7 +55,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-
+	userid := GetUserId(r)
+	repository.UpdateStatusUser(userid, "online")
 	SetCookie(w, "token", uuid.String(), timeex)
 	JsoneResponse(w, r, loged, http.StatusOK)
 }
@@ -88,6 +88,8 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
+	
+	repository.UpdateStatusUser(int(logout.Id), "offline")
 	clearCookies(w)
 	w.WriteHeader(http.StatusOK)
 }
