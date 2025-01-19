@@ -2,78 +2,75 @@ package handlers
 
 import (
 	"encoding/json"
+	"forum-project/backend/internal/database"
+	"log"
 	"net/http"
-	"sync"
 	"time"
-
-	users "forum-project/backend/internal/repository/users"
-
-	"github.com/gorilla/websocket"
 )
 
+type UserStatusResponse struct {
+	ID        int       `json:"id"`
+	Nickname  string    `json:"nickname"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Status    string    `json:"status"`
+	LastSeen  time.Time `json:"lastSeen,omitempty"`
+	Email     string    `json:"email"`
+}
+
 func HandleUsersStatus(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader2.Upgrade(w, r, nil)
+	w.Header().Set("Content-Type", "application/json")
+	db := database.Config()
+
+	query := `
+		SELECT 
+			id,
+			nickname,
+			firstname,
+			lastname,
+			email,
+			status
+		FROM user
+		ORDER BY 
+			CASE 
+				WHEN status = 'online' THEN 1
+				ELSE 2
+			END,
+			nickname ASC`
+
+	rows, err := db.Query(query)
 	if err != nil {
-		http.Error(w, "WebSocket upgrade failed", http.StatusInternalServerError)
+		log.Printf("Query error: %v", err)
+		http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close()
+	defer rows.Close()
 
-	userId := GetUserId(r)
+	var users []UserStatusResponse
+	for rows.Next() {
+		var user UserStatusResponse
 
-	// Use defer for cleanup to ensure it happens in all cases
-	defer func() {
-		updateUserStatus(userId, false)
-		usersConnMu.Lock()
-		delete(usersConn, userId)
-		usersConnMu.Unlock()
-	}()
+		err := rows.Scan(
+			&user.ID,
+			&user.Nickname,
+			&user.FirstName,
+			&user.LastName,
+			&user.Email,
+			&user.Status,
+		)
 
-	// Register connection with proper error handling
-	if err := updateUserStatus(userId, true); err != nil {
-		return
-	}
-
-	usersConnMu.Lock()
-	usersConn[userId] = conn
-	usersConnMu.Unlock()
-
-	// Add ping/pong handlers for connection health
-	conn.SetPingHandler(func(string) error {
-		return conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(time.Second))
-	})
-
-	// Message handling loop with timeout
-	for {
-		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
-		messageType, _, err := conn.ReadMessage()
 		if err != nil {
-			return
-		}
-
-		usersStatus := users.SelectUserStatus(userId)
-		responseJson, err := json.Marshal(usersStatus)
-		if err != nil {
+			log.Printf("Row scan error: %v", err)
 			continue
 		}
 
-		conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-		if err := conn.WriteMessage(messageType, responseJson); err != nil {
-			return
+		if user.Status == "" {
+			user.Status = "offline"
 		}
-	}
-}
 
-var dbMutex sync.Mutex
-
-func updateUserStatus(userID int, online bool) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	status := "offline"
-	if online {
-		status = "online"
+		users = append(users, user)
 	}
 
-	return users.UpdateStatusUser(userID, status)
+	json.NewEncoder(w).Encode(users)
+
 }

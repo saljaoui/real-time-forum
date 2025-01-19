@@ -15,6 +15,14 @@ func inserMessages(user_id int, content string, user_reciever int, time time.Tim
 	}
 }
 
+func inserMessage(SenderId, ReceiverId int, Content string, Timestamp time.Time) {
+	query := "INSERT INTO messages(sender_id, receiver_id, message, sent_at) VALUES(?,?,?,?);"
+	_, err := database.Exec(query, SenderId, ReceiverId, Content, Timestamp)
+	if err != nil {
+		fmt.Println("error to insert")
+	}
+}
+
 func checkifuserexist(userId int) bool {
 	var exists bool
 	query := "SELECT EXISTS (select id from user where id = ?)"
