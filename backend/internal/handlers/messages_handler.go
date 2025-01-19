@@ -89,6 +89,7 @@ func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
+		
 		err := recipientConn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("Error sending message to user %d: %v", msg.ReceiverId, err)
