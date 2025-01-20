@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,6 +13,9 @@ func GetMessageHistory(w http.ResponseWriter, r *http.Request) {
 	var msg messagings.Message
 
 	receiverIdStr := r.URL.Query().Get("receiverId")
+	page := r.URL.Query().Get("page")
+	fmt.Println(page)
+
 	if receiverIdStr == "" {
 		JsoneResponse(w, r, "receiverId is required", http.StatusBadRequest)
 		return
@@ -27,8 +31,8 @@ func GetMessageHistory(w http.ResponseWriter, r *http.Request) {
 	msg.SenderId = userID
 	msg.ReceiverId = receiverId
 
-	msgs := msg.GetMessageHistory()
-	
+	msgs := msg.GetMessageHistory(page)
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(msgs); err != nil {
 		JsoneResponse(w, r, err.Error(), http.StatusInternalServerError)

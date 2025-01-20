@@ -285,10 +285,6 @@ func GetUsersStatus(userId int) []UserStatusResponse {
 			continue
 		}
 
-		if user.Status == "" {
-			user.Status = "offline"
-		}
-
 		users = append(users, user)
 	}
 	return users

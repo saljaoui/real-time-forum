@@ -1,6 +1,6 @@
 import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 
-
+let page = 0
 let socket;
 let attendeeslist;
 const msg = {
@@ -20,11 +20,8 @@ function initializeWebSocket() {
 
     socket.onmessage = (event) => {
         const receivedData = JSON.parse(event.data);
-        console.log(receivedData);
         
         if (receivedData.type == 'message') {
-            console.log("msg.receiverId", msg.receiverId);
-            console.log("receivedData.senderId", receivedData.senderId);
             if (msg.receiverId == receivedData.senderId) {
             let messagesArea = document.querySelector('.messages-area');
             const messageElement = createMessageElement(receivedData.content, 'message-container received');
@@ -71,7 +68,7 @@ export async function rightSidebar() {
     users.appendChild(attendeesList);
     
     try {
-        const response = await fetch('http://localhost:3333/api/users/status');
+        const response = await fetch('/api/users/status');
         const usersData = await response.json();
 
         usersData.forEach(user => {
@@ -115,13 +112,12 @@ function addEventListenerToUser(userElement) {
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
         createMessageInterface(userElement);
-        getMessagesHistory()
+        getMessagesHistory(page)
     });
 }
 
 function createUsers(usersData) {    
     attendeeslist.innerHTML = '';
-    console.log('waaaaaaaaaak waaaaaaaaak');
     usersData.forEach(user => {
         console.log(user);
         
@@ -236,26 +232,42 @@ function createMessageElement(content, msgClass) {
     return messageContainer;
 }
 
-async function  getMessagesHistory() {
-    let page = 1
-    const response = await fetch(`/api/messages/history?receiverId=${msg.receiverId}&page=${page} `, {
+async function getMessagesHistory(page) {
+    const response = await fetch(`/api/messages/history?receiverId=${msg.receiverId}&page=${page}`, {
         method: 'GET',
     });
+
     if (response.ok) {
         const messages = await response.json();
         let messagesArea = document.querySelector('.messages-area');
-        messages.forEach((message) => {
-            const messageElement = createMessageElement(message.content, `message-container ${message.senderId != msg.receiverId ? 'sent' : 'received'}`);
-            messagesArea.appendChild(messageElement);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-        })
+        
+        const previousHeight = messagesArea.scrollHeight;
+        
+        messages.reverse().forEach((message) => {
+            const messageElement = createMessageElement(
+                message.content, 
+                `message-container ${message.senderId != msg.receiverId ? 'sent' : 'received'}`
+            );
+
+            messagesArea.insertBefore(messageElement, messagesArea.firstChild);
+        });
+
+        messagesArea.scrollTop = messagesArea.scrollHeight - previousHeight;
+        setupScrollListener()
     }
+}
 
+function setupScrollListener() {
+    let messagesArea = document.querySelector('.messages-area');
+    let isLoading = false;
 
-// hadi bach nb9a nsfd ch7al mn page o njib data mli scrol ywli 0 
-//     let messagesArea = document.querySelector('.messages-area');
-//     messagesArea.addEventListener('scroll', () => { 
-//     console.log(messagesArea.scrollTop); 
-// });
+    messagesArea.addEventListener('scroll', async () => {
+        if (messagesArea.scrollTop === 0 && !isLoading) {
+            isLoading = true;
+            page++;
+            await getMessagesHistory(page);
+            isLoading = false;
+        }
+    });
 }
 

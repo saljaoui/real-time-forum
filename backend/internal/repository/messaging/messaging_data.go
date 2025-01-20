@@ -2,6 +2,7 @@ package messagings
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"forum-project/backend/internal/database"
@@ -14,9 +15,15 @@ func inserMessage(SenderId, ReceiverId int, Content string, Timestamp time.Time)
 		fmt.Println("error to insert")
 	}
 }
-
-func getMessageHistory(SenderId, ReceiverId int) []Message {
+func getMessageHistory(SenderId, ReceiverId int, page string) []Message {
     var messages []Message
+    
+    pageNum, err := strconv.Atoi(page)
+    if err != nil {
+        fmt.Println("Error converting page to int:", err)
+        return nil
+    }
+    
     query := `
         SELECT
             sender_id,
@@ -28,24 +35,26 @@ func getMessageHistory(SenderId, ReceiverId int) []Message {
             (sender_id = $1 AND receiver_id = $2)
             OR
             (sender_id = $2 AND receiver_id = $1)
-        ORDER BY sent_at ASC;
-    `
-	DB := database.Config()
-    rows, err := DB.Query(query, SenderId, ReceiverId)
+        ORDER BY sent_at ASC
+        LIMIT $3 OFFSET $4`
+    
+    DB := database.Config()
+    rows, err := DB.Query(query, SenderId, ReceiverId, 10, pageNum*10)
     if err != nil {
+        fmt.Println("Database query error:", err) 
         return nil
     }
     defer rows.Close()
-
+    
     for rows.Next() {
         var msg Message
-        err := rows.Scan( &msg.SenderId, &msg.ReceiverId, &msg.Content, &msg.Timestamp)
+        err := rows.Scan(&msg.SenderId, &msg.ReceiverId, &msg.Content, &msg.Timestamp)
         if err != nil {
+            fmt.Println("Row scan error:", err)
             return nil
         }
         messages = append(messages, msg)
     }
-
     return messages
 }
 
