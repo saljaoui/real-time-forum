@@ -10,7 +10,7 @@ const msg = {
 };
 
 function initializeWebSocket() {
-    socket = new WebSocket('ws://localhost:3333/ws');
+    socket = new WebSocket('ws://10.1.6.12:3333/ws');
 
     socket.onopen = (event) => {
         console.log('Connected to the server');
@@ -68,7 +68,7 @@ export async function rightSidebar() {
     users.appendChild(attendeesList);
     
     try {
-        const response = await fetch('/api/users/status');
+        const response = await fetch('http://10.1.6.12:3333/api/users/status');
         const usersData = await response.json();
 
         usersData.forEach(user => {
@@ -118,6 +118,7 @@ function addEventListenerToUser(userElement) {
 
 function createUsers(usersData) {    
     attendeeslist.innerHTML = '';
+    console.log('waaaaaaaaaak waaaaaaaaak');
     usersData.forEach(user => {
         console.log(user);
         
