@@ -120,7 +120,6 @@ function addEventListenerToUser(userElement) {
 function createUsers(usersData) {    
     attendeeslist.innerHTML = '';
     usersData.forEach(user => {
-        console.log(user);
         
         const userElement = createElementWithClass('div', 'user');
         userElement.setAttribute('senderId', user.id);
@@ -223,12 +222,12 @@ function createMessageElement(content, msgClass) {
 
     const messageContent = createElementWithClass('div', 'message-content');
     messageContent.textContent = content;
-    
+
     const messageTime = createElementWithClass('div', 'message-time');
-    messageTime.textContent = new Date().toLocaleTimeString();
+    messageTime.textContent = new Date().toLocaleTimeString(); 
     
-    messageContainer.appendChild(messageContent);
     messageContainer.appendChild(messageTime);
+    messageContainer.appendChild(messageContent);
     
     return messageContainer;
 }

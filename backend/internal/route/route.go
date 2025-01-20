@@ -53,6 +53,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 
 		allowedFiles := map[string]bool{
 			"css/style.css": true,
+			"imgs/background.png":true,
 			"imgs/s.png":    true,
 			"imgs/avatar.png": true,
 		}
