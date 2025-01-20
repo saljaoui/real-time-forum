@@ -111,6 +111,7 @@ function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
+        page = 0
         createMessageInterface(userElement);
         getMessagesHistory(page)
     });
