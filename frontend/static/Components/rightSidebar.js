@@ -10,7 +10,7 @@ const msg = {
 };
 
 function initializeWebSocket() {
-    socket = new WebSocket('ws://10.1.6.12:3333/ws');
+    socket = new WebSocket('ws://localhost:3333/ws');
 
     socket.onopen = (event) => {
         console.log('Connected to the server');
@@ -23,12 +23,15 @@ function initializeWebSocket() {
         console.log(receivedData);
         
         if (receivedData.type == 'message') {
-            if (msg.receiverId == receivedData.receiverId) {
+            console.log("msg.receiverId", msg.receiverId);
+            console.log("receivedData.senderId", receivedData.senderId);
+            if (msg.receiverId == receivedData.senderId) {
             let messagesArea = document.querySelector('.messages-area');
             const messageElement = createMessageElement(receivedData.content, 'message-container received');
             messagesArea.appendChild(messageElement);
             messagesArea.scrollTop = messagesArea.scrollHeight;
-        }
+            }
+        
         } else if (receivedData.type == 'status') {
             createUsers(receivedData.usersStatus)      
         } 
@@ -68,7 +71,7 @@ export async function rightSidebar() {
     users.appendChild(attendeesList);
     
     try {
-        const response = await fetch('http://10.1.6.12:3333/api/users/status');
+        const response = await fetch('http://localhost:3333/api/users/status');
         const usersData = await response.json();
 
         usersData.forEach(user => {
