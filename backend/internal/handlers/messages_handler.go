@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -45,13 +44,16 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	var sts repository.Status
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
+	repository.UpdateStatusUser(userId, "online")
 	ws.handleStatusUsers(sts, userId)
+
 	ws.mu.Unlock()
 
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
+		repository.UpdateStatusUser(userId, "offline")
 		ws.handleStatusUsers(sts, userId)
 		ws.mu.Unlock()
 	}()
@@ -86,7 +88,6 @@ func (ws *WS) readLoop(userId int) {
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	msg.AddMessages()
-	fmt.Println(msg)
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
 
