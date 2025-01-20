@@ -10,7 +10,6 @@ import (
 	messagings "forum-project/backend/internal/repository/messaging"
 	repository "forum-project/backend/internal/repository/users"
 
-
 	"github.com/gorilla/websocket"
 )
 
@@ -48,12 +47,11 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	ws.usersConn[userId] = conn
 	ws.handleStatusUsers(sts, userId)
 	ws.mu.Unlock()
-	fmt.Println("heeeeeeeer")
+
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
-		// repository.UpdateStatusUser(userId, "offline")
 		ws.handleStatusUsers(sts, userId)
 		ws.mu.Unlock()
 	}()
@@ -62,7 +60,6 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WS) readLoop(userId int) {
-	// var sts repository.Status
 	ws.mu.RLock()
 	conn := ws.usersConn[userId]
 	ws.mu.RUnlock()
@@ -80,20 +77,16 @@ func (ws *WS) readLoop(userId int) {
 		msg.SenderId = userId
 		msg.Timestamp = time.Now()
 
-		fmt.Println(msg)
-
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
-			// case "status":
-			// 	ws.handleStatusUsers(sts, userId)
 		}
 	}
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	msg.AddMessages()
-
+	fmt.Println(msg)
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
 

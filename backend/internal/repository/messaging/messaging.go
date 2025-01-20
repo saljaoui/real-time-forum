@@ -14,6 +14,10 @@ func (m *Message) AddMessages() {
 	inserMessage(m.SenderId, m.ReceiverId, m.Content, m.Timestamp)
 }
 
+func (m *Message) GetMessageHistory() []Message {
+	return getMessageHistory(m.SenderId, m.ReceiverId)
+}
+
 func CheckUser(userId int) bool {
 	return checkifuserexist(userId)
 }

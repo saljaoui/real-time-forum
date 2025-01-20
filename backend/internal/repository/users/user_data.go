@@ -35,8 +35,8 @@ func insertUser(users *User, password string) (sql.Result, error) {
 	Lastname := html.EscapeString(users.Lastname)
 	Email := strings.ToLower(html.EscapeString(users.Email))
 	Password := html.EscapeString(password)
-	stm := "INSERT INTO user (nickname,age,gender,firstname,lastname,email,password, status) VALUES(?,?,?,?,?,?,?,?)"
-	row, err := database.Exec(stm, Nickname, Age, Gender, Firstname, Lastname, Email, Password, "online")
+	stm := "INSERT INTO user (nickname,age,gender,firstname,lastname,email,password) VALUES(?,?,?,?,?,?,?)"
+	row, err := database.Exec(stm, Nickname, Age, Gender, Firstname, Lastname, Email, Password)
 	return row, err
 }
 

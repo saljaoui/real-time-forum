@@ -1,6 +1,6 @@
 import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 
-// Declare socket variable in global scope but don't initialize it yet
+
 let socket;
 let attendeeslist;
 const msg = {
@@ -9,7 +9,6 @@ const msg = {
     Content: '',
 };
 
-// Move socket handlers into a separate function
 function initializeWebSocket() {
     socket = new WebSocket('ws://localhost:3333/ws');
 
@@ -20,16 +19,19 @@ function initializeWebSocket() {
     }
 
     socket.onmessage = (event) => {
-        let messagesArea = document.querySelector('.messages-area');
         const receivedData = JSON.parse(event.data);
-        console.log(receivedData.type);
+        console.log(receivedData);
+        
         if (receivedData.type == 'message') {
+            if (msg.receiverId == receivedData.receiverId) {
+            let messagesArea = document.querySelector('.messages-area');
             const messageElement = createMessageElement(receivedData.content, 'message-container received');
             messagesArea.appendChild(messageElement);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
         } else if (receivedData.type == 'status') {
-            console.log('its heeeeeeeeeere');
             createUsers(receivedData.usersStatus)      
-        }    
+        } 
     };
 
     return socket;
@@ -47,7 +49,7 @@ export function closeSocket() {
 }
 
 export async function rightSidebar() {
-    // Initialize WebSocket when rightSidebar is called
+
     socket = initializeWebSocket();
 
     const sidebarRight = createElementWithClass('div', 'sidebar-right');
@@ -66,13 +68,9 @@ export async function rightSidebar() {
     users.appendChild(attendeesList);
     
     try {
-        console.log('jjjjjjjjjjjjjjj>>');
-        
-        const response = await fetch('http://10.1.6.12:3333/api/users/status');
-
-        console.log('vheeeeeeeeeeeeeeee.');
+        const response = await fetch('/api/users/status');
         const usersData = await response.json();
-        
+
         usersData.forEach(user => {
             
             const userElement = createElementWithClass('div', 'user');
@@ -109,10 +107,17 @@ export async function rightSidebar() {
 
     return sidebarRight;
 }
+function addEventListenerToUser(userElement) {
+    userElement.addEventListener('click', () => {
+        const senderId = userElement.getAttribute('senderId');
+        msg.receiverId = +senderId
+        createMessageInterface(userElement);
+        getMessagesHistory()
+    });
+}
 
 function createUsers(usersData) {    
     attendeeslist.innerHTML = '';
-    console.log('waaaaaaaaaak waaaaaaaaak');
     usersData.forEach(user => {
         console.log(user);
         
@@ -139,14 +144,6 @@ function createUsers(usersData) {
         
         addEventListenerToUser(userElement);
         attendeeslist.appendChild(userElement);
-    });
-}
-
-function addEventListenerToUser(userElement) {
-    userElement.addEventListener('click', () => {
-        const senderId = userElement.getAttribute('senderId');
-        msg.receiverId = +senderId;
-        createMessageInterface(userElement);
     });
 }
 
@@ -193,7 +190,8 @@ async function createMessageInterface(userElement) {
         if (message) {
             const messageElement = createMessageElement(message, 'message-container sent');
             messagesArea.appendChild(messageElement);
-            msg.Content = messageInput.value;
+            msg.Content = messageInput.value
+            msg.type = 'message'
             socket.send(JSON.stringify(msg));
             messageInput.value = '';
             msg.Content = '';
@@ -219,8 +217,9 @@ async function createMessageInterface(userElement) {
 }
 
 function createMessageElement(content, msgClass) {
+
     const messageContainer = createElementWithClass('div', msgClass);
-    
+
     const messageContent = createElementWithClass('div', 'message-content');
     messageContent.textContent = content;
     
@@ -232,3 +231,27 @@ function createMessageElement(content, msgClass) {
     
     return messageContainer;
 }
+
+async function  getMessagesHistory() {
+    let page = 1
+    const response = await fetch(`/api/messages/history?receiverId=${msg.receiverId}&page=${page} `, {
+        method: 'GET',
+    });
+    if (response.ok) {
+        const messages = await response.json();
+        let messagesArea = document.querySelector('.messages-area');
+        messages.forEach((message) => {
+            const messageElement = createMessageElement(message.content, `message-container ${message.senderId != msg.receiverId ? 'sent' : 'received'}`);
+            messagesArea.appendChild(messageElement);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        })
+    }
+
+
+// hadi bach nb9a nsfd ch7al mn page o njib data mli scrol ywli 0 
+//     let messagesArea = document.querySelector('.messages-area');
+//     messagesArea.addEventListener('scroll', () => { 
+//     console.log(messagesArea.scrollTop); 
+// });
+}
+
