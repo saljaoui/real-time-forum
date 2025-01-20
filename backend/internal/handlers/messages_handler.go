@@ -46,13 +46,14 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	var sts repository.Status
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
-	// ws.handleStatusUsers(sts, userId)
+	ws.handleStatusUsers(sts, userId)
 	ws.mu.Unlock()
 	fmt.Println("heeeeeeeer")
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
+		// repository.UpdateStatusUser(userId, "offline")
 		ws.handleStatusUsers(sts, userId)
 		ws.mu.Unlock()
 	}()
@@ -110,7 +111,6 @@ func (ws *WS) handleStatusUsers(sts repository.Status, userId int) {
 	sts.UsersStatus = users
 	for _, v := range ws.usersConn {
 		if v != ws.usersConn[userId] {
-			fmt.Println(v)
 			err := v.WriteJSON(sts)
 			if err != nil {
 				log.Printf("Error updating status")

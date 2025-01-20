@@ -1,40 +1,54 @@
 import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 
-
-const socket = new WebSocket('ws://localhost:3333/ws');
-
+// Declare socket variable in global scope but don't initialize it yet
+let socket;
 let attendeeslist;
 const msg = {
     type: "message",
     receiverId: 0,
-    Content:'',
+    Content: '',
 };
 
-socket.onopen = (event) => {
-    console.log('Connected to the server');
+// Move socket handlers into a separate function
+function initializeWebSocket() {
+    socket = new WebSocket('ws://localhost:3333/ws');
+
+    socket.onopen = (event) => {
+        console.log('Connected to the server');
+        msg.type = 'status'
+        socket.send(JSON.stringify(msg));
+    }
+
+    socket.onmessage = (event) => {
+        let messagesArea = document.querySelector('.messages-area');
+        const receivedData = JSON.parse(event.data);
+        console.log(receivedData.type);
+        if (receivedData.type == 'message') {
+            const messageElement = createMessageElement(receivedData.content, 'message-container received');
+            messagesArea.appendChild(messageElement);
+        } else if (receivedData.type == 'status') {
+            console.log('its heeeeeeeeeere');
+            createUsers(receivedData.usersStatus)      
+        }    
+    };
+
+    return socket;
 }
 
-socket.onmessage = (event) => {
-    
-    let messagesArea = document.querySelector('.messages-area');
-    const receivedData = JSON.parse(event.data);
-    console.log(receivedData.type);
-    if (receivedData.type == 'message') {
-        const messageElement = createMessageElement(receivedData.content, 'message-container received');
-        messagesArea.appendChild(messageElement);
-    } else if (receivedData.type == 'status') {
-        createUsers(receivedData.usersStatus)        
-    }    
-};
-
 export function closeSocket() {
-    msg.type = 'status'
-    socket.send(JSON.stringify(msg));
-    socket.close();  // This will send a close frame to the server
-    console.log('WebSocket connection is closing...');
+    if (socket) {
+        setTimeout(() => {
+            msg.type = 'status'
+            socket.send(JSON.stringify(msg));
+            socket.close();
+            console.log('WebSocket connection is closing...');
+        },1000)
+    }
 }
 
 export async function rightSidebar() {
+    // Initialize WebSocket when rightSidebar is called
+    socket = initializeWebSocket();
 
     const sidebarRight = createElementWithClass('div', 'sidebar-right');
     
@@ -47,17 +61,19 @@ export async function rightSidebar() {
     const users = createElementWithClass('div', 'users');
     const usersHeader = createElementWithClass('div', 'users-header', 'Users');
     const attendeesList = createElementWithClass('div', 'attendees-list');
-    attendeeslist = attendeesList
+    attendeeslist = attendeesList;
     users.appendChild(usersHeader);
     users.appendChild(attendeesList);
     
     try {
-        const response = await fetch('http://localhost:3333/api/users/status');
+        console.log('jjjjjjjjjjjjjjj>>');
+        
+        const response = await fetch('http://10.1.6.12:3333/api/users/status');
+
+        console.log('vheeeeeeeeeeeeeeee.');
         const usersData = await response.json();
-        msg.type = 'status'
-        socket.send(JSON.stringify(msg));
+        
         usersData.forEach(user => {
-            console.log(user);
             
             const userElement = createElementWithClass('div', 'user');
             userElement.setAttribute('senderId', user.id);
@@ -96,39 +112,40 @@ export async function rightSidebar() {
 
 function createUsers(usersData) {    
     attendeeslist.innerHTML = '';
-        usersData.forEach(user => {
-            console.log(user);
-            
-            const userElement = createElementWithClass('div', 'user');
-            userElement.setAttribute('senderId', user.id);
-            
-            const avatar = createElementWithClass('div', 'user-avatar');
+    console.log('waaaaaaaaaak waaaaaaaaak');
+    usersData.forEach(user => {
+        console.log(user);
+        
+        const userElement = createElementWithClass('div', 'user');
+        userElement.setAttribute('senderId', user.id);
+        
+        const avatar = createElementWithClass('div', 'user-avatar');
 
-            const userInfo = createElementWithClass('div', 'user-info');
-            const userName = createElementWithClass('div', 'user-name');
-            userName.textContent = `${user.firstName} ${user.lastName}`;
-            
-            const userEmail = createElementWithClass('div', 'user-email');
-            userEmail.textContent = user.email;
-            
-            const userStatus = createElementWithClass('div', 'user-status');
-            userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
+        const userInfo = createElementWithClass('div', 'user-info');
+        const userName = createElementWithClass('div', 'user-name');
+        userName.textContent = `${user.firstName} ${user.lastName}`;
+        
+        const userEmail = createElementWithClass('div', 'user-email');
+        userEmail.textContent = user.email;
+        
+        const userStatus = createElementWithClass('div', 'user-status');
+        userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
 
-            userInfo.appendChild(userName);
-            userInfo.appendChild(userEmail);
-            userElement.appendChild(avatar);
-            userElement.appendChild(userStatus);
-            userElement.appendChild(userInfo);
-            
-            addEventListenerToUser(userElement);
-            attendeeslist.appendChild(userElement);
-        })
+        userInfo.appendChild(userName);
+        userInfo.appendChild(userEmail);
+        userElement.appendChild(avatar);
+        userElement.appendChild(userStatus);
+        userElement.appendChild(userInfo);
+        
+        addEventListenerToUser(userElement);
+        attendeeslist.appendChild(userElement);
+    });
 }
 
 function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
         const senderId = userElement.getAttribute('senderId');
-        msg.receiverId = +senderId
+        msg.receiverId = +senderId;
         createMessageInterface(userElement);
     });
 }
@@ -176,7 +193,7 @@ async function createMessageInterface(userElement) {
         if (message) {
             const messageElement = createMessageElement(message, 'message-container sent');
             messagesArea.appendChild(messageElement);
-            msg.Content = messageInput.value
+            msg.Content = messageInput.value;
             socket.send(JSON.stringify(msg));
             messageInput.value = '';
             msg.Content = '';
