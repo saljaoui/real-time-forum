@@ -59,7 +59,6 @@ export async function rightSidebar() {
         let user_id = await getUserId()        
         usersData.forEach(user => {
             if (user_id != user.id) {
-                console.log(user_id, " >>>> ", user.id);
                 
             const userElement = createElementWithClass('div', 'user');
             userElement.setAttribute('senderId', user.id);
@@ -191,7 +190,6 @@ function createMessageElement(content, msgClass) {
     
     return messageContainer;
 }
-
 async function getMessagesHistory(page) {
     const response = await fetch(`/api/messages/history?receiverId=${msg.receiverId}&page=${page}`, {
         method: 'GET',
@@ -200,6 +198,7 @@ async function getMessagesHistory(page) {
     if (response.ok) {
         const messages = await response.json();
         let messagesArea = document.querySelector('.messages-area');
+        if (messages == null) { return }
         
         const previousHeight = messagesArea.scrollHeight;
         
@@ -213,22 +212,34 @@ async function getMessagesHistory(page) {
         });
 
         messagesArea.scrollTop = messagesArea.scrollHeight - previousHeight;
-        setupScrollListener()
+        setupScrollListener();
     }
 }
 
 function setupScrollListener() {
     let messagesArea = document.querySelector('.messages-area');
-    let isLoading = false;
 
-    messagesArea.addEventListener('scroll', async () => {
-        if (messagesArea.scrollTop === 0 && !isLoading) {
-            isLoading = true;
+    const throttledScroll = throttle(async () => {
+        if (messagesArea.scrollTop <= 50) {
             page++;
             await getMessagesHistory(page);
-            isLoading = false;
+            messagesArea.scrollTop = messagesArea.scrollTop - 100
         }
-    });
+    }, 200);
+
+    messagesArea.addEventListener('scroll', throttledScroll);
+}
+
+function throttle(func, limit) {
+    let lastCall = 0;
+
+    return function (arg) {
+        const now = new Date().getTime();
+        if (now - lastCall >= limit) {
+            lastCall = now;
+            func(arg);
+        }
+    };
 }
 
 async function getUserId() {
