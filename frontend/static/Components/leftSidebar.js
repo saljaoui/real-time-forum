@@ -5,8 +5,8 @@ export function leftSidebar() {
     const sidebarLeft = createElementWithClass('div', 'sidebar-left');
     
     const universityLogo = createElementWithClass('div', 'university-logo');
-    const logoBox = createElementWithClass('div', 'logo-box', 'D');
-    const universityName = createElementWithClass('span', 'university-name', 'Diprella');
+    const logoBox = createElementWithClass('div', 'logo-box', );
+    const universityName = createElementWithClass('span', 'university-name', 'Space');
     
     universityLogo.appendChild(logoBox);
     universityLogo.appendChild(universityName);

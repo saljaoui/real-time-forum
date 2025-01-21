@@ -12,6 +12,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type userStuts struct {
+	Type string `json:"type"`
+	UserId int `json:"userid"`
+	Status string `json:"status"`
+}
 type WS struct {
 	upgrader  websocket.Upgrader
 	usersConn map[int]*websocket.Conn
@@ -41,12 +46,10 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	userId := GetUserId(r)
 
-	var sts repository.Status
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
 	repository.UpdateStatusUser(userId, "online")
-	ws.handleStatusUsers(sts, userId)
-
+	ws.handleStatusUsers("online", userId)
 	ws.mu.Unlock()
 
 	defer func() {
@@ -54,7 +57,7 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
 		repository.UpdateStatusUser(userId, "offline")
-		ws.handleStatusUsers(sts, userId)
+		ws.handleStatusUsers("offline", userId)
 		ws.mu.Unlock()
 	}()
 
@@ -62,8 +65,11 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WS) readLoop(userId int) {
+
 	ws.mu.RLock()
 	conn := ws.usersConn[userId]
+	repository.UpdateStatusUser(userId, "online")
+	ws.handleStatusUsers("online", userId)
 	ws.mu.RUnlock()
 
 	for {
@@ -82,6 +88,8 @@ func (ws *WS) readLoop(userId int) {
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
+		// case "status":
+		// 	ws.handleStatusUsers(sts, userId)
 		}
 	}
 }
@@ -99,16 +107,15 @@ func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	ws.mu.RUnlock()
 }
 
-func (ws *WS) handleStatusUsers(sts repository.Status, userId int) {
-	users := repository.GetUsersStatus(userId)
-	sts.Type = "status"
-	sts.UsersStatus = users
+func (ws *WS) handleStatusUsers(sts string, userId int) {
+	var userstr  userStuts
+	userstr.UserId = userId
+	userstr.Status = sts
+	userstr.Type = "status"
 	for _, v := range ws.usersConn {
-		if v != ws.usersConn[userId] {
-			err := v.WriteJSON(sts)
-			if err != nil {
-				log.Printf("Error updating status")
-			}
+		err := v.WriteJSON(userstr)
+		if err != nil {
+			log.Printf("Error updating status")
 		}
 	}
 }

@@ -12,3 +12,8 @@ func HandleUsersStatus(w http.ResponseWriter, r *http.Request) {
 	users := user.GetUsersStatus(userId)
 	json.NewEncoder(w).Encode(users)
 }
+
+func HandleUserId(w http.ResponseWriter, r *http.Request) {
+	userId := GetUserId(r)
+	json.NewEncoder(w).Encode(userId)
+}

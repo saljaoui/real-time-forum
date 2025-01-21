@@ -18,7 +18,8 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/ws", handlers.NewWS().HandleWebSocket)
 	mux.HandleFunc("/api/users/status", handlers.HandleUsersStatus)
-    mux.HandleFunc("/api/messages/history", handlers.GetMessageHistory)
+	mux.HandleFunc("/api/userId", handlers.HandleUserId)
+	mux.HandleFunc("/api/messages/history", handlers.GetMessageHistory)
 
 	mux.HandleFunc("/api/auth", handlers.HandelStatus)
 	mux.Handle("/api/reaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleReaction)))
@@ -29,7 +30,7 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.Handle("/api/post", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlePost)))
 	mux.Handle("/api/addcomment", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.Handler_AddComment)))
 	mux.Handle("/api/logout", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleLogOut)))
-	
+
 }
 
 func SetupPageRoutes(mux *http.ServeMux) {
@@ -52,9 +53,11 @@ func SetupPageRoutes(mux *http.ServeMux) {
 		}
 
 		allowedFiles := map[string]bool{
-			"css/style.css": true,
-			"imgs/s.png":    true,
-			"imgs/avatar.png": true,
+			"css/style.css":          true,
+			"imgs/background.png":    true,
+			"imgs/s.png":             true,
+			"imgs/avatar.png":        true,
+			"imgs/backgtoundWeb.png": true,
 		}
 
 		if !allowedFiles[suffix] {
@@ -64,7 +67,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 		http.ServeFile(w, r, "../../frontend/static/"+suffix)
 	})
 
-	mux.HandleFunc("/diprela", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/space", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "../../frontend/templates/index.html")
 	})
 
@@ -95,10 +98,10 @@ func isValidPath(path string, paths []string) bool {
 func validatePath(w http.ResponseWriter, r *http.Request) {
 	paths := []string{
 		"/err",
-		"/diprela",
+		"/space",
 	}
 	if r.URL.Path == "/" {
-		http.Redirect(w, r, "/diprela", http.StatusFound)
+		http.Redirect(w, r, "/space", http.StatusFound)
 		return
 	} else if !isValidPath(r.URL.Path, paths) || r.URL.Path == "/logout" {
 		handlers.JsoneResponseError(w, r, "Page Not Found", http.StatusNotFound)

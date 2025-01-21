@@ -21,7 +21,7 @@ function createContainer() {
 }
 
 function createLoginSection(loginSection) {
-    const logo = createElementWithClass('div', 'logo', 'Diprella');
+    const logo = createElementWithClass('div', 'logo', 'Space');
     loginSection.appendChild(logo);
 
     const welcomeHeader = createElementWithClass('h1', '', 'Hello, Friend!');
@@ -37,7 +37,7 @@ function createLoginSection(loginSection) {
 }
 
 function createLogupSection(loginSection) {
-    const logo = createElementWithClass('div', 'logo', 'Diprella');
+    const logo = createElementWithClass('div', 'logo', 'Space');
     loginSection.appendChild(logo);
 
     const welcomeHeader = createElementWithClass('h1', '', 'Welcome Back!');
@@ -64,7 +64,7 @@ function createSigninSection(signinSection) {
 }
 
 function createSignupSection(signupSection) {
-    const signupHeader = createElementWithClass('h1', 'signup-header', 'Sigin In to Diprella');
+    const signupHeader = createElementWithClass('h1', 'signup-header', 'Sigin In to Space');
     signupSection.appendChild(signupHeader);
 
     const divider = createElementWithClass('p', 'divider', 'use your nickname for registration:');

@@ -11,16 +11,9 @@ const msg = {
 
 function initializeWebSocket() {
     socket = new WebSocket('ws://localhost:3333/ws');
-
-    socket.onopen = (event) => {
-        console.log('Connected to the server');
-        msg.type = 'status'
-        socket.send(JSON.stringify(msg));
-    }
-
-    socket.onmessage = (event) => {
+    
+    socket.onmessage = (event) => {        
         const receivedData = JSON.parse(event.data);
-        
         if (receivedData.type == 'message') {
             if (msg.receiverId == receivedData.senderId) {
             let messagesArea = document.querySelector('.messages-area');
@@ -29,24 +22,17 @@ function initializeWebSocket() {
             messagesArea.scrollTop = messagesArea.scrollHeight;
             }
         
-        } else if (receivedData.type == 'status') {
-            createUsers(receivedData.usersStatus)      
+        } else if (receivedData.type == 'status') { 
+            //{type: 'status', userid: 1, status: 'online'}
+            updateUserStatus(receivedData.userid, receivedData.status)    
         } 
     };
 
     return socket;
 }
 
-export function closeSocket() {
-    if (socket) {
-        setTimeout(() => {
-            msg.type = 'status'
-            socket.send(JSON.stringify(msg));
-            socket.close();
-            console.log('WebSocket connection is closing...');
-        },1000)
-    }
-}
+
+
 
 export async function rightSidebar() {
 
@@ -70,9 +56,11 @@ export async function rightSidebar() {
     try {
         const response = await fetch('/api/users/status');
         const usersData = await response.json();
-
+        let user_id = await getUserId()        
         usersData.forEach(user => {
-            
+            if (user_id != user.id) {
+                console.log(user_id, " >>>> ", user.id);
+                
             const userElement = createElementWithClass('div', 'user');
             userElement.setAttribute('senderId', user.id);
             
@@ -96,6 +84,7 @@ export async function rightSidebar() {
             
             addEventListenerToUser(userElement);
             attendeesList.appendChild(userElement);
+            }
         });
 
     } catch (error) {
@@ -111,41 +100,12 @@ function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
+        page = 0
         createMessageInterface(userElement);
         getMessagesHistory(page)
     });
 }
 
-function createUsers(usersData) {    
-    attendeeslist.innerHTML = '';
-    usersData.forEach(user => {
-        console.log(user);
-        
-        const userElement = createElementWithClass('div', 'user');
-        userElement.setAttribute('senderId', user.id);
-        
-        const avatar = createElementWithClass('div', 'user-avatar');
-
-        const userInfo = createElementWithClass('div', 'user-info');
-        const userName = createElementWithClass('div', 'user-name');
-        userName.textContent = `${user.firstName} ${user.lastName}`;
-        
-        const userEmail = createElementWithClass('div', 'user-email');
-        userEmail.textContent = user.email;
-        
-        const userStatus = createElementWithClass('div', 'user-status');
-        userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
-
-        userInfo.appendChild(userName);
-        userInfo.appendChild(userEmail);
-        userElement.appendChild(avatar);
-        userElement.appendChild(userStatus);
-        userElement.appendChild(userInfo);
-        
-        addEventListenerToUser(userElement);
-        attendeeslist.appendChild(userElement);
-    });
-}
 
 async function createMessageInterface(userElement) {
     const mainContent = document.querySelector('.main-content');
@@ -222,12 +182,12 @@ function createMessageElement(content, msgClass) {
 
     const messageContent = createElementWithClass('div', 'message-content');
     messageContent.textContent = content;
-    
+
     const messageTime = createElementWithClass('div', 'message-time');
-    messageTime.textContent = new Date().toLocaleTimeString();
+    messageTime.textContent = new Date().toLocaleTimeString(); 
     
-    messageContainer.appendChild(messageContent);
     messageContainer.appendChild(messageTime);
+    messageContainer.appendChild(messageContent);
     
     return messageContainer;
 }
@@ -271,3 +231,39 @@ function setupScrollListener() {
     });
 }
 
+async function getUserId() {
+    const response = await fetch('/api/userId');
+    const usersID = await response.json();
+    return usersID    
+}
+
+function updateUserStatus(userId, status) {
+    // Find the user element with the matching senderId
+    const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
+    
+    if (userElement) {
+        // Find the status element within the user element
+        const statusElement = userElement.querySelector('.user-status');
+        
+        if (statusElement) {
+            // Remove existing status classes
+            statusElement.classList.remove('online', 'offline');
+            // Add new status class
+            statusElement.classList.add(status);
+        }
+        
+        // If there's an open chat with this user, update the chat header status too
+        const chatHeader = document.querySelector('.chat-header');
+        if (chatHeader && msg.receiverId === userId) {
+            const headerStatus = chatHeader.querySelector('.user-status');
+            if (headerStatus) {
+                headerStatus.classList.remove('online', 'offline');
+                headerStatus.classList.add(status);
+            }
+        }
+    }
+}
+
+export function closeSocket() {
+    socket.close()
+}

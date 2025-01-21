@@ -253,7 +253,7 @@ func GetUsersStatus(userId int) []UserStatusResponse {
 			lastname,
 			email,
 			status
-		FROM user
+		FROM user u
 		ORDER BY 
 			CASE 
 				WHEN status = 'online' THEN 1
