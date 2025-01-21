@@ -184,8 +184,8 @@ async function fetchDataSignUp() {
     })
     if (response.ok) {
         const data = await response.json();
+        localStorage.setItem("user", JSON.stringify(data))
         createDashboard()
-        console.log(data);
     }
 }
 
@@ -204,8 +204,9 @@ async function fetchDataLogin() {
     })
     if (response.ok) {
         const data = await response.json();
+        localStorage.setItem("user", JSON.stringify(data))
         createDashboard()
-        console.log(data);
+
     }
 }
 

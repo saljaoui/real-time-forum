@@ -87,6 +87,8 @@ export async function fetchProfileData(Type) {
         let mainContent = document.querySelector('.main-content')
         cleanCards('.post-card')
         const data = await response.json();
+        console.log(data);
+        
         postCard(data, mainContent)
 
       }
@@ -175,7 +177,6 @@ export async function fetchComments(cardId) {
     
     if (response.ok) {
         let mainContent = document.querySelector('.main-content')
-        // cleanUp(mainContent)
         const data = await response.json()
         console.log("this",data);
         mainContent.appendChild(commentCard(data, mainContent))    

@@ -44,8 +44,8 @@ func selectUser(log *Login) *User {
 	user := User{}
 	email := strings.ToLower(log.Email)
 	password := strings.ToLower(log.Password)
-	query := "select id,email,password, firstname ,lastname FROM user where email=?"
-	err := database.SelectOneRow(query, email, password).Scan(&user.Id, &user.Email, &user.Password, &user.Firstname, &user.Lastname)
+	query := "select id, email, password, firstname ,lastname ,nickname ,gender ,age FROM user where email=?"
+	err := database.SelectOneRow(query, email, password).Scan(&user.Id, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.Nickname, &user.Gender, &user.Age)
 	if err != nil {
 		fmt.Println("error to select user", err)
 	}

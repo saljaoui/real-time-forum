@@ -215,16 +215,20 @@ async function getMessagesHistory(page) {
         setupScrollListener();
     }
 }
-
+let loding = false
 function setupScrollListener() {
     let messagesArea = document.querySelector('.messages-area');
 
     const throttledScroll = throttle(async () => {
-        if (messagesArea.scrollTop <= 50) {
+        if (messagesArea.scrollTop <= 50 && !loding) {
+            loding = true
             page++;
             await getMessagesHistory(page);
             messagesArea.scrollTop = messagesArea.scrollTop - 100
         }
+        setTimeout(()=> {
+            loding = false
+        }, 200)
     }, 200);
 
     messagesArea.addEventListener('scroll', throttledScroll);
@@ -232,7 +236,6 @@ function setupScrollListener() {
 
 function throttle(func, limit) {
     let lastCall = 0;
-
     return function (arg) {
         const now = new Date().getTime();
         if (now - lastCall >= limit) {

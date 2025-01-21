@@ -173,6 +173,9 @@ func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Message
 			loged := ResponceUser{
 				Id:        user.Id,
 				UUID:      uuid.String(),
+				Gender:	   user.Gender,
+				Nickname:  user.Nickname,
+				Age:	   user.Age,
 				Email:     user.Email,
 				Firstname: user.Firstname,
 				Lastname:  user.Lastname,
