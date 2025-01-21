@@ -97,3 +97,9 @@ func UpdateStatusUser(userID int, status string) error {
 	_, err := database.Exec(stm, status, userID)
 	return err
 }
+
+func UpdateNotif(notif string, userId int) error{
+	stm := "UPDATE user SET notif=? WHERE id=?"
+	_, err := database.Exec(stm, notif, userId)
+	return err
+}

@@ -7,6 +7,7 @@ const msg = {
     type: "message",
     receiverId: 0,
     Content: '',
+    notif: '',
 };
 
 function initializeWebSocket() {
@@ -25,7 +26,9 @@ function initializeWebSocket() {
         } else if (receivedData.type == 'status') { 
             //{type: 'status', userid: 1, status: 'online'}
             updateUserStatus(receivedData.userid, receivedData.status)    
-        } 
+        } else if (receivedData.type == 'notif') {
+            createNotif(receivedData.userids)
+        }
     };
 
     return socket;
@@ -58,9 +61,7 @@ export async function rightSidebar() {
         const usersData = await response.json();
         let user_id = await getUserId()        
         usersData.forEach(user => {
-            if (user_id != user.id) {
-                console.log(user_id, " >>>> ", user.id);
-                
+            if (user_id != user.id) {                
             const userElement = createElementWithClass('div', 'user');
             userElement.setAttribute('senderId', user.id);
             
@@ -75,13 +76,16 @@ export async function rightSidebar() {
             
             const userStatus = createElementWithClass('div', 'user-status');
             userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
-
+            
             userInfo.appendChild(userName);
             userInfo.appendChild(userEmail);
             userElement.appendChild(avatar);
             userElement.appendChild(userStatus);
             userElement.appendChild(userInfo);
-            
+            if (user.notif == 'yes') {
+                const notif = createElementWithClass('div', 'user-notif')
+                userElement.appendChild(notif)
+            }
             addEventListenerToUser(userElement);
             attendeesList.appendChild(userElement);
             }
@@ -96,11 +100,21 @@ export async function rightSidebar() {
 
     return sidebarRight;
 }
+
 function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
+        
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
         page = 0
+        const userElemen = attendeeslist.querySelector(`div[senderId="${senderId}"]`);
+        const statusElement = userElemen.querySelector('.user-notif');
+        if (statusElement != null) {
+            msg.type = 'notif'
+            msg.notif = 'no'
+            socket.send(JSON.stringify(msg));
+            statusElement.remove()
+        }
         createMessageInterface(userElement);
         getMessagesHistory(page)
     });
@@ -238,17 +252,13 @@ async function getUserId() {
 }
 
 function updateUserStatus(userId, status) {
-    // Find the user element with the matching senderId
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
     
     if (userElement) {
-        // Find the status element within the user element
         const statusElement = userElement.querySelector('.user-status');
         
         if (statusElement) {
-            // Remove existing status classes
             statusElement.classList.remove('online', 'offline');
-            // Add new status class
             statusElement.classList.add(status);
         }
         
@@ -266,4 +276,17 @@ function updateUserStatus(userId, status) {
 
 export function closeSocket() {
     socket.close()
+}
+
+function createNotif(userId) {
+    const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
+    const notifexit = attendeeslist.querySelector('.user-notif')
+    if (notifexit == null) {
+    msg.type = 'notif'
+    msg.notif = 'yes'
+    msg.receiverId = userId
+    socket.send(JSON.stringify(msg));
+    const notif = createElementWithClass('div', 'user-notif')
+    userElement.appendChild(notif)
+    }
 }

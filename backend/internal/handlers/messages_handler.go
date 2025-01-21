@@ -17,6 +17,13 @@ type userStuts struct {
 	UserId int `json:"userid"`
 	Status string `json:"status"`
 }
+
+type userNotif struct {
+	Type string `json:"type"`
+	UserIdS int `json:"userids"`
+	UserIdR int `json:"useridr"`
+}
+
 type WS struct {
 	upgrader  websocket.Upgrader
 	usersConn map[int]*websocket.Conn
@@ -88,6 +95,8 @@ func (ws *WS) readLoop(userId int) {
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
+		case "notif":
+			updateNotif(msg)
 		// case "status":
 		// 	ws.handleStatusUsers(sts, userId)
 		}
@@ -96,6 +105,7 @@ func (ws *WS) readLoop(userId int) {
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	msg.AddMessages()
+	ws.handleNotif(msg.SenderId, msg.ReceiverId)
 	ws.mu.RLock()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
 
@@ -118,4 +128,19 @@ func (ws *WS) handleStatusUsers(sts string, userId int) {
 			log.Printf("Error updating status")
 		}
 	}
+}
+
+func (ws *WS) handleNotif(userSendId int, userRecieveId int) {
+	var usrnotif userNotif
+	usrnotif.Type = "notif"
+	usrnotif.UserIdS = userSendId
+	usrnotif.UserIdR = userRecieveId
+	err := ws.usersConn[userRecieveId].WriteJSON(usrnotif)
+		if err != nil {
+			log.Printf("Error sending notifaction")
+		}
+}
+
+func updateNotif(msg messagings.Message) {
+	repository.UpdateNotif(msg.Notif, msg.ReceiverId)
 }

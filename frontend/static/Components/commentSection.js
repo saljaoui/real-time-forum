@@ -2,8 +2,6 @@ import { createElementWithClass, getTimeDifferenceInHours } from '/static/utils/
 import { actions, noDataYet} from '/static/Components/homeSection.js'
 
 export function commentCard(data, mainContent) {
-    console.log("okokokokok");
-    console.log(data);
     if (noDataYet(data, mainContent, 'The Are No Comment')) { return; }
     
     const commentsList = createElementWithClass('div', 'comments-list');
