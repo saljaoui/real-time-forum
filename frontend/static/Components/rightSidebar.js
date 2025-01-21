@@ -238,21 +238,16 @@ async function getUserId() {
 }
 
 function updateUserStatus(userId, status) {
-    // Find the user element with the matching senderId
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
     
     if (userElement) {
-        // Find the status element within the user element
         const statusElement = userElement.querySelector('.user-status');
         
         if (statusElement) {
-            // Remove existing status classes
             statusElement.classList.remove('online', 'offline');
-            // Add new status class
             statusElement.classList.add(status);
         }
         
-        // If there's an open chat with this user, update the chat header status too
         const chatHeader = document.querySelector('.chat-header');
         if (chatHeader && msg.receiverId === userId) {
             const headerStatus = chatHeader.querySelector('.user-status');
