@@ -71,7 +71,7 @@ func Exec(query string, model ...any) (sql.Result, error) {
 	defer db.Close()
 	res, err := db.Exec(query, model...)
 	if err != nil {
-		return nil, fmt.Errorf("exec error: %v", err)
+		return nil, fmt.Errorf("%v", err)
 	}
 	return res, nil
 }

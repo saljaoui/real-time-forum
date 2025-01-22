@@ -41,6 +41,10 @@ export async function createDashboard() {
     dashboard.appendChild(sidebar);
     document.body.appendChild(dashboard);
 
+    if (data.message == 'Unauthorized token') {
+        dashboard.remove()
+        buildLoginPage();
+    }
 
     let errorContainerP = document.body.querySelector('.error-container p')
     if (errorContainerP.innerHTML != '{{.Message}}') {
@@ -49,10 +53,6 @@ export async function createDashboard() {
 
         errorContainer.classList.add('show')
 
-    if (data.message == 'Unauthorized token') {
-        dashboard.remove()
-        buildLoginPage();
-    }
 }
 
 }

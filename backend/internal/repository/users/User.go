@@ -104,14 +104,14 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 	checkemail := strings.ToLower(users.Email)
 	exists := emailExists(checkemail)
 	if exists {
-		message.MessageError = "Email user already exists"
+		message.MessageError = "Email or nickaname user already exists"
 		return ResponceUser{}, message, ""
 	}
 
 	password := hashPassword(users.Password)
 	rows, err := insertUser(users, password)
 	if err != nil {
-		message.MessageError = "Error creating this user."
+		message.MessageError = err.Error()
 		return loged, message, uuid
 	}
 

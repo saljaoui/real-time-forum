@@ -72,7 +72,7 @@ export async function rightSidebar() {
 
             const userInfo = createElementWithClass('div', 'user-info');
             const userName = createElementWithClass('div', 'user-name');
-            userName.textContent = `${user.firstName} ${user.lastName}`;
+            userName.textContent = `${user.nickname}`;
             
             const userEmail = createElementWithClass('div', 'user-email');
             userEmail.textContent = user.email;
@@ -322,7 +322,7 @@ async function createUser() {
 
         const userInfo = createElementWithClass('div', 'user-info');
         const userName = createElementWithClass('div', 'user-name');
-        userName.textContent = `${user.firstName} ${user.lastName}`;
+        userName.textContent = `${user.nickname}`;
 
         const userEmail = createElementWithClass('div', 'user-email');
         userEmail.textContent = user.email;

@@ -2,12 +2,13 @@
 
 CREATE TABLE user(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nickname text   not NULL,
-    age text   not NULL,
-    gender text   not NULL,
+    nickname text   not NULL UNIQUE,
+    -- age text   not NULL,
+    age INT CHECK (age BETWEEN 16 AND 100),
+    gender TEXT NOT NULL CHECK (gender = 'Male' OR gender = 'Female'),
     firstname text   not NULL,
     lastname text not NULL,
-    email text not NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE CHECK (email LIKE '%@%.%'),
     password text not NULL,
     expires DATETIME,
     CreateAt DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -114,9 +114,12 @@ function createGenderField() {
     const group = createElementWithClass('div', 'form-group');
     
     const select = createElementWithClass('select');
-
+    select.required = true;  // Make sure the user selects an option
+    
     const optionGender = createElementWithClass('option');
     optionGender.textContent = 'Select Gender';
+    optionGender.disabled = true;  // Make this option unselectable
+    optionGender.selected = true;  // Make this option the default
     select.appendChild(optionGender);
     
     const optionMale = createElementWithClass('option');
@@ -133,6 +136,7 @@ function createGenderField() {
     
     return group;
 }
+
 
 
 function handleLogin(signInBtn, email, passwordGroup) {
@@ -190,6 +194,9 @@ async function fetchDataSignUp() {
         const data = await response.json();
         localStorage.setItem("user", JSON.stringify(data))
         createDashboard()
+    } else {
+        const data = await response.json();
+        alert(data.message)
     }
 }
 
@@ -211,6 +218,9 @@ async function fetchDataLogin() {
         localStorage.setItem("user", JSON.stringify(data))
         createDashboard()
 
+    } else {
+        const data = await response.json();
+        alert(data.message)
     }
 }
 
