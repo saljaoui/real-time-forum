@@ -1,8 +1,10 @@
 import { createElementWithClass, getTimeDifferenceInHours } from '/static/utils/utils.js';
 import { creatPost, fetchCard } from '../main.js'
+import { msg } from '/static/Components/rightSidebar.js';
+
 
 export function createHome() {
-
+    msg.receiverId = 0;
     const createNewPost = createElementWithClass('div', 'create-new-post');
     const newPost = createElementWithClass('div', 'new-post');
     const textarea = createElementWithClass('textarea');

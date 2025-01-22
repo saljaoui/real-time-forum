@@ -3,7 +3,7 @@ import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 let page = 0
 let socket;
 let attendeeslist;
-const msg = {
+export const msg = {
     type: "message",
     receiverId: 0,
     Content: '',
@@ -16,8 +16,9 @@ function initializeWebSocket() {
     socket.onmessage = (event) => {        
         const receivedData = JSON.parse(event.data);
         if (receivedData.type == 'message') {
-            if (msg.receiverId == receivedData.senderId) {
+            
             let messagesArea = document.querySelector('.messages-area');
+            if (msg.receiverId == receivedData.senderId && messagesArea != null) {
             const messageElement = createMessageElement(receivedData.content, 'message-container received');
             messagesArea.appendChild(messageElement);
             messagesArea.scrollTop = messagesArea.scrollHeight;
@@ -290,9 +291,8 @@ export function closeSocket() {
 function createNotif(userId) {
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
     const notifexit = userElement.querySelector('.user-notif')
-    const chat = document.querySelector('.messages-container')
     
-    if (notifexit == null && chat == null) {
+    if (notifexit == null && msg.receiverId != userId) {
     const notif = createElementWithClass('div', 'user-notif')
     userElement.appendChild(notif)
     }

@@ -596,7 +596,7 @@ h1 {
 .user-notif {
     width: 37px;
     height: 37px;
-    background: url("../imgs/notif.png") no-repeat center/cover;
+    background: url("../imgs/message.gif") no-repeat center/cover;
     border-radius: 50%;
 }
 
