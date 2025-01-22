@@ -58,7 +58,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 			"imgs/s.png":             true,
 			"imgs/avatar.png":        true,
 			"imgs/backgtoundWeb.png": true,
-			"imgs/notif.png": true,
+			"imgs/message.gif": true,
 		}
 
 		if !allowedFiles[suffix] {
