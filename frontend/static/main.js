@@ -40,6 +40,11 @@ export async function createDashboard() {
     dashboard.appendChild(mainContent);
     dashboard.appendChild(sidebar);
     document.body.appendChild(dashboard);
+    if (data.message == 'Unauthorized token') {
+        dashboard.remove()
+        buildLoginPage();
+    }
+
 }
 
 export async function switchSection(navItemName) {
@@ -76,8 +81,18 @@ async function fetchDataPosts() {
         const data =  await response.json();
         return data
       }
+      const data =  await response.json();
+      if (data.message == 'Unauthorized token') {
+            return data
+            
+        //   cleanCards(".dashboard")
+      }
+      
+
       
 }
+
+
 
 export async function fetchProfileData(Type) {
     const response = await fetch(`/api/profile/${Type.toLowerCase()}`, {
@@ -142,10 +157,7 @@ function addEventCommentBtn(createPostBtn, cardId, textarea) {
 }
 
 async function createComment(commentContent, cardId) {
-    console.log(cardId);
-    console.log(commentContent);
-    
-    
+
     const response = await fetch("/api/addcomment", {
         method: "POST",
         headers: {
@@ -160,7 +172,6 @@ async function createComment(commentContent, cardId) {
 
     if (response.ok) {
         const data = await response.json();
-        console.log(data)
         cleanCards('.comments-list')
         cleanCards('.no-posts')
         fetchComments(cardId)
@@ -176,7 +187,6 @@ export async function fetchComments(cardId) {
     if (response.ok) {
         let mainContent = document.querySelector('.main-content')
         const data = await response.json()
-        console.log("this",data);
         mainContent.appendChild(commentCard(data, mainContent))    
     }
 }
@@ -192,10 +202,7 @@ export default async function logout() {
         },
         body: JSON.stringify({ uuid: Useruuid }),
     });
-    
-    if (response.ok) {
-        console.log("Logout successful");
-    } 
+
 }
 
 export async function creatPost(categoriesSelected, postContent) {
@@ -218,7 +225,6 @@ export async function creatPost(categoriesSelected, postContent) {
         let dataa = await fetchDataPosts()
         let mainContent = document.querySelector('.main-content')
         postCard(dataa, mainContent)
-        console.log(data);
     }
 
 }

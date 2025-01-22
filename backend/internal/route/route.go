@@ -15,11 +15,11 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/comment", handlers.Handel_GetCommet)
 	mux.HandleFunc("/api/card", handlers.GetCard_handler)
 	mux.HandleFunc("/api/isLogged", handlers.HandleIsLogged)
-
-	mux.HandleFunc("/ws", handlers.NewWS().HandleWebSocket)
-	mux.HandleFunc("/api/users/status", handlers.HandleUsersStatus)
 	mux.HandleFunc("/api/userId", handlers.HandleUserId)
-	mux.HandleFunc("/api/messages/history", handlers.GetMessageHistory)
+
+	mux.Handle("/ws", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.NewWS().HandleWebSocket)))
+	mux.Handle("/api/users/status", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleUsersStatus)))
+	mux.Handle("/api/messages/history", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.GetMessageHistory)))
 
 	mux.HandleFunc("/api/auth", handlers.HandelStatus)
 	mux.Handle("/api/reaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleReaction)))

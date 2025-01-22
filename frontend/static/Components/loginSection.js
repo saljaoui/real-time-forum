@@ -1,5 +1,7 @@
 import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 import { createDashboard } from '../main.js'
+import { sendNewUserSignUp } from '/static/Components/rightSidebar.js';
+
 
 const userDataSingUp = {
     nickName: '',
@@ -160,7 +162,9 @@ function handleSignUp(signUpBtn, nickName, age, firstName, lastName, emailGroup,
         userDataSingUp.gender = genderGroup.querySelector('select').value;
 
         fetchDataSignUp()
-
+        setTimeout (() => {
+            sendNewUserSignUp()
+        },1000)        
     })
 }
 
@@ -275,20 +279,22 @@ function toggleToSignIn(loginSection, signupSection, container) {
 }
 
 export function buildLoginPage() {
+    
     let loginPage = createElementWithClass('section', 'login-page')
     const container = createContainer();
     const loginSection = createElementWithClass('div', 'login-section');
     const signupSection = createElementWithClass('div', 'signup-section');
     container.appendChild(loginSection);
     container.appendChild(signupSection);
-
+    
     const signUpBtn = createLoginSection(loginSection);
     createSignupSection(signupSection);
-
+    
     loginPage.appendChild(container);
     document.body.appendChild(loginPage)
-
+    
     signUpBtn.addEventListener('click', () => {
         toggleToSignUp(loginSection, signupSection, container);
     });
+
 }
