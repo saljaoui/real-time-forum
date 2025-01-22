@@ -1,6 +1,7 @@
-// Import statements
-import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
+import { createElementWithClass, cleanUp, cleanCards } from '/static/utils/utils.js';
 import { createDashboard } from '../main.js'
+import { sendNewUserSignUp } from '/static/Components/rightSidebar.js';
+
 
 // Global user data objects
 const userDataSingUp = {
@@ -25,7 +26,7 @@ function createContainer() {
 
 // Login section creation
 function createLoginSection(loginSection) {
-    const logo = createElementWithClass('div', 'logo', 'Diprella');
+    const logo = createElementWithClass('div', 'logo', 'Space');
     loginSection.appendChild(logo);
 
     const welcomeHeader = createElementWithClass('h1', '', 'Hello, Friend!');
@@ -42,7 +43,7 @@ function createLoginSection(loginSection) {
 
 // Logup section creation
 function createLogupSection(loginSection) {
-    const logo = createElementWithClass('div', 'logo', 'Diprella');
+    const logo = createElementWithClass('div', 'logo', 'Space');
     loginSection.appendChild(logo);
 
     const welcomeHeader = createElementWithClass('h1', '', 'Welcome Back!');
@@ -71,7 +72,7 @@ function createSigninSection(signinSection) {
 
 // Signup section creation
 function createSignupSection(signupSection) {
-    const signupHeader = createElementWithClass('h1', 'signup-header', 'Sigin In to Diprella');
+    const signupHeader = createElementWithClass('h1', 'signup-header', 'Sigin In to Space');
     signupSection.appendChild(signupHeader);
 
     const divider = createElementWithClass('p', 'divider', 'use your nickname for registration:');
@@ -163,11 +164,12 @@ function createGenderField(required = true) {
     const group = createElementWithClass('div', 'form-group');
     
     const select = createElementWithClass('select');
-    select.required = required;
+    select.required = true;  // Make sure the user selects an option
     
     const optionGender = createElementWithClass('option');
     optionGender.textContent = 'Select Gender';
-    optionGender.value = '';  // Empty value to trigger required validation
+    optionGender.disabled = true;  // Make this option unselectable
+    optionGender.selected = true;  // Make this option the default
     select.appendChild(optionGender);
     
     const optionMale = createElementWithClass('option');
@@ -185,7 +187,8 @@ function createGenderField(required = true) {
     return group;
 }
 
-// Event handlers
+
+
 function handleLogin(signInBtn, email, passwordGroup) {
     signInBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -223,18 +226,11 @@ function handleSignUp(signUpBtn, nickName, age, firstName, lastName, emailGroup,
             gender: genderGroup.querySelector('select').value
         };
 
-        if (validateForm(formData)) {
-            userDataSingUp.nickName = formData.nickName;
-            userDataSingUp.age = formData.age;
-            userDataSingUp.firstName = formData.firstName;
-            userDataSingUp.lastName = formData.lastName;
-            userDataSingUp.email = formData.email;
-            userDataSingUp.password = formData.password;
-            userDataSingUp.gender = formData.gender;
-
-            fetchDataSignUp();
-        }
-    });
+        fetchDataSignUp()
+        setTimeout (() => {
+            sendNewUserSignUp()
+        },1000)        
+    })
 }
 
 // API calls
@@ -258,15 +254,11 @@ async function fetchDataSignUp() {
         });
         
         const data = await response.json();
-        
-        if (response.ok) {
-            createDashboard();
-            console.log(data);
-        } else {
-            showPopup(data.message || 'Registration failed');
-        }
-    } catch (error) {
-        showPopup('An error occurred. Please try again.');
+        localStorage.setItem("user", JSON.stringify(data))
+        createDashboard()
+    } else {
+        const data = await response.json();
+        alert(data.message)
     }
 }
 
@@ -285,15 +277,12 @@ async function fetchDataLogin() {
         });
         
         const data = await response.json();
-        
-        if (response.ok) {
-            createDashboard();
-            console.log(data);
-        } else {
-            showPopup(data.message || 'Login failed');
-        }
-    } catch (error) {
-        showPopup('An error occurred. Please try again.');
+        localStorage.setItem("user", JSON.stringify(data))
+        createDashboard()
+
+    } else {
+        const data = await response.json();
+        alert(data.message)
     }
 }
 
@@ -336,22 +325,30 @@ function toggleToSignIn(loginSection, signupSection, container) {
 
 // Main build function
 export function buildLoginPage() {
-    let loginPage = createElementWithClass('section', 'login-page');
+    
+    let loginPage = createElementWithClass('section', 'login-page')
     const container = createContainer();
     const loginSection = createElementWithClass('div', 'login-section');
     const signupSection = createElementWithClass('div', 'signup-section');
     container.appendChild(loginSection);
     container.appendChild(signupSection);
-
+    
     const signUpBtn = createLoginSection(loginSection);
     createSignupSection(signupSection);
-
+    
     loginPage.appendChild(container);
-    document.body.appendChild(loginPage);
-
+    document.body.appendChild(loginPage)
+    
     signUpBtn.addEventListener('click', () => {
         toggleToSignUp(loginSection, signupSection, container);
     });
+
+        let errorContainerP = document.body.querySelector('.error-container p')
+        if (errorContainerP.innerHTML != '{{.Message}}') {
+            cleanCards('.login-page')
+            let errorContainer = document.body.querySelector('.error-container')
+            errorContainer.classList.add('show')
+        }
 }
 
 function showPopup(message) {

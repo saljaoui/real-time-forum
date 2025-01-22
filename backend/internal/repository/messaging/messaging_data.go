@@ -2,18 +2,11 @@ package messagings
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"forum-project/backend/internal/database"
 )
-
-func inserMessages(user_id int, content string, user_reciever int, time time.Time) {
-	query := "INSERT INTO messages(user_id, content, created_at, user_id_receiver) VALUES(?,?,?,?);"
-	_, err := database.Exec(query, user_id, content, time, user_reciever)
-	if err != nil {
-		fmt.Println("error to insert")
-	}
-}
 
 func inserMessage(SenderId, ReceiverId int, Content string, Timestamp time.Time) {
 	query := "INSERT INTO messages(sender_id, receiver_id, message, sent_at) VALUES(?,?,?,?);"
@@ -21,6 +14,48 @@ func inserMessage(SenderId, ReceiverId int, Content string, Timestamp time.Time)
 	if err != nil {
 		fmt.Println("error to insert")
 	}
+}
+func getMessageHistory(SenderId, ReceiverId int, page string) []Message {
+    var messages []Message
+    
+    pageNum, err := strconv.Atoi(page)
+    if err != nil {
+        fmt.Println("Error converting page to int:", err)
+        return nil
+    }
+    
+    query := `
+        SELECT
+            sender_id,
+            receiver_id,
+            message,
+            sent_at
+        FROM messages
+        WHERE
+            (sender_id = $1 AND receiver_id = $2)
+            OR
+            (sender_id = $2 AND receiver_id = $1)
+        ORDER BY sent_at ASC
+        LIMIT $3 OFFSET $4`
+    
+    DB := database.Config()
+    rows, err := DB.Query(query, SenderId, ReceiverId, 10, pageNum*10)
+    if err != nil {
+        fmt.Println("Database query error:", err) 
+        return nil
+    }
+    defer rows.Close()
+    
+    for rows.Next() {
+        var msg Message
+        err := rows.Scan(&msg.SenderId, &msg.ReceiverId, &msg.Content, &msg.Timestamp)
+        if err != nil {
+            fmt.Println("Row scan error:", err)
+            return nil
+        }
+        messages = append(messages, msg)
+    }
+    return messages
 }
 
 func checkifuserexist(userId int) bool {

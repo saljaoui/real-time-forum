@@ -1,17 +1,28 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
 	messagings "forum-project/backend/internal/repository/messaging"
+	repository "forum-project/backend/internal/repository/users"
 
 	"github.com/gorilla/websocket"
 )
 
+type userStuts struct {
+	Type   string `json:"type"`
+	UserId int    `json:"userid"`
+	Status string `json:"status"`
+}
 
+type userNotif struct {
+	Type    string `json:"type"`
+	UserIdS int    `json:"userids"`
+	UserIdR int    `json:"useridr"`
+}
 
 type WS struct {
 	upgrader  websocket.Upgrader
@@ -44,12 +55,16 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
+	repository.UpdateStatusUser(userId, "online")
+	ws.handleStatusUsers("online", userId)
 	ws.mu.Unlock()
 
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
 		delete(ws.usersConn, userId)
+		repository.UpdateStatusUser(userId, "offline")
+		ws.handleStatusUsers("offline", userId)
 		ws.mu.Unlock()
 	}()
 
@@ -59,6 +74,8 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 func (ws *WS) readLoop(userId int) {
 	ws.mu.RLock()
 	conn := ws.usersConn[userId]
+	repository.UpdateStatusUser(userId, "online")
+	ws.handleStatusUsers("online", userId)
 	ws.mu.RUnlock()
 
 	for {
@@ -74,25 +91,64 @@ func (ws *WS) readLoop(userId int) {
 		msg.SenderId = userId
 		msg.Timestamp = time.Now()
 
-		fmt.Println(msg)
-		
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
+		case "refrech":
+			ws.handleRefrechNewUser(msg, userId)
+
 		}
 	}
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
+	ws.mu.RLock()
 
 	msg.AddMessages()
-
-	ws.mu.RLock()
+	ws.handleNotif(msg.SenderId, msg.ReceiverId)
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
+
 		err := recipientConn.WriteJSON(msg)
 		if err != nil {
 			log.Printf("Error sending message to user %d: %v", msg.ReceiverId, err)
 		}
 	}
+
 	ws.mu.RUnlock()
+}
+
+func (ws *WS) handleRefrechNewUser(msg messagings.Message, userId int) {
+	msg.Type = "refrech"
+	for _, v := range ws.usersConn {
+		if v != ws.usersConn[userId] {
+			err := v.WriteJSON(msg)
+			if err != nil {
+				log.Printf("Error updating status")
+			}
+		}
+	}
+}
+
+func (ws *WS) handleStatusUsers(sts string, userId int) {
+	var userstr userStuts
+	userstr.UserId = userId
+	userstr.Status = sts
+	userstr.Type = "status"
+	for _, v := range ws.usersConn {
+		err := v.WriteJSON(userstr)
+		if err != nil {
+			log.Printf("Error updating status")
+		}
+	}
+}
+
+func (ws *WS) handleNotif(userSendId int, userRecieveId int) {
+	var usrnotif userNotif
+	usrnotif.Type = "notif"
+	usrnotif.UserIdS = userSendId
+	usrnotif.UserIdR = userRecieveId
+	err := ws.usersConn[userRecieveId].WriteJSON(usrnotif)
+	if err != nil {
+		log.Printf("Error sending notifaction")
+	}
 }

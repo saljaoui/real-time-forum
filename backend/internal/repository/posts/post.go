@@ -33,7 +33,7 @@ type PostResponde struct {
 	Dislikes     int    `json:"dislikes"`
 	UserReaction int    `json:"userReaction"`
 	Comments     string `json:"comments"`
-	CreatedAt    string `json:"createdat"`
+	CreatedAt    string `json:"date"`
 }
 
 func (p *Post) Add() int {

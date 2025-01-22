@@ -2,15 +2,33 @@ package user
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	messages "forum-project/backend/internal/Messages"
+	"forum-project/backend/internal/database"
 
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type UserStatusResponse struct {
+	ID        int       `json:"id"`
+	Nickname  string    `json:"nickname"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Status    string    `json:"status"`
+	LastSeen  time.Time `json:"lastSeen,omitempty"`
+	Email     string    `json:"email"`
+	Notif     string    `json:"notif"`
+}
+
+type Status struct {
+	Type        string               `json:"type"` // "message", "status", "typing", etc.
+	UsersStatus []UserStatusResponse `json:"usersStatus"`
+}
 
 type User struct {
 	Id        int64     `json:"id"`
@@ -23,8 +41,7 @@ type User struct {
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdat"`
 	UUID      uuid.UUID `json:"uuid"`
-	Status      uuid.UUID `json:"status"`
-
+	Status    uuid.UUID `json:"status"`
 }
 type ResponceUser struct {
 	Id        int64  `json:"id"`
@@ -41,13 +58,6 @@ type Login struct {
 	Email    string `json:"email"`
 	UUID     string `json:"uuid"`
 	Password string `json:"password"`
-}
-
-type UserStatusResponse struct {
-	Id        int64  `json:"id"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Status    string `json:"status"`
 }
 
 type UUID struct {
@@ -94,14 +104,14 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 	checkemail := strings.ToLower(users.Email)
 	exists := emailExists(checkemail)
 	if exists {
-		message.MessageError = "Email user already exists"
+		message.MessageError = "Email or nickaname user already exists"
 		return ResponceUser{}, message, ""
 	}
 
 	password := hashPassword(users.Password)
 	rows, err := insertUser(users, password)
 	if err != nil {
-		message.MessageError = "Error creating this user."
+		message.MessageError = err.Error()
 		return loged, message, uuid
 	}
 
@@ -164,6 +174,9 @@ func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Message
 			loged := ResponceUser{
 				Id:        user.Id,
 				UUID:      uuid.String(),
+				Gender:	   user.Gender,
+				Nickname:  user.Nickname,
+				Age:	   user.Age,
 				Email:     user.Email,
 				Firstname: user.Firstname,
 				Lastname:  user.Lastname,
@@ -231,4 +244,81 @@ func (u *UUID) UUiduser(uuid string) (m messages.Messages) {
 	}
 	u.Iduser = id_user
 	return m
+}
+
+func GetUsersStatus(userId int) []UserStatusResponse {
+	db := database.Config()
+
+	query := `
+WITH last_messages AS (
+            SELECT
+                u.id AS user_id,
+                u.firstname,
+                u.lastname,
+                u.nickname,
+                u.email,
+                u.age,
+                u.gender,
+				u.status,
+                u.CreateAt as user_created_at,
+                COALESCE(m.message, "") as last_message_content,
+                COALESCE(m.sender_id, 0) as last_message_sender,
+                COALESCE(strftime('%Y-%m-%dT%H:%M:%SZ', m.sent_at), "") AS sort_time
+            FROM
+                user u
+            LEFT JOIN messages m
+                ON m.id = (
+                    SELECT id
+                    FROM messages
+                    WHERE ((sender_id = u.id AND receiver_id = ? ) OR (sender_id = ? AND receiver_id = u.id))
+                    ORDER BY sent_at DESC
+                    LIMIT 1
+                )
+            WHERE
+                u.id != ?
+        )
+        SELECT
+            user_id AS id,
+            nickname,
+            firstname,
+            lastname,
+            email,
+            status
+        FROM
+            last_messages
+        ORDER BY
+            CASE
+                WHEN sort_time = "" THEN 1 
+                ELSE 0
+            END,
+            sort_time DESC,
+            nickname ASC; `
+
+	rows, err := db.Query(query, userId, userId, userId)
+	if err != nil {
+		log.Printf("Query error: %v", err)
+		return nil
+	}
+	defer rows.Close()
+
+	var users []UserStatusResponse
+	for rows.Next() {
+		var user UserStatusResponse
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Nickname,
+			&user.FirstName,
+			&user.LastName,
+			&user.Email,
+			&user.Status,
+		)
+		if err != nil {
+			log.Printf("Row scan error: %v", err)
+			continue
+		}
+
+		users = append(users, user)
+	}
+	return users
 }

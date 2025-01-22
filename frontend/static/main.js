@@ -6,8 +6,9 @@ import { createProfileSection } from './Components/profileSection.js';
 import { createCategories } from './Components/categoriesSection.js';
 import { buildLoginPage } from './Components/loginSection.js';
 import { commentCard } from './Components/commentSection.js';
-
 import { handleAuthCheck } from './utils/utils.js';
+import { closeSocket } from './Components/rightSidebar.js';
+
 
 document.addEventListener('DOMContentLoaded', async () => {
     let isAuthenticated = await handleAuthCheck();
@@ -16,9 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         createDashboard();
     } else {
         buildLoginPage();
-    }
+    } 
+    
 });
-
 
 export async function createDashboard() {
 
@@ -39,6 +40,21 @@ export async function createDashboard() {
     dashboard.appendChild(mainContent);
     dashboard.appendChild(sidebar);
     document.body.appendChild(dashboard);
+
+    if (data.message == 'Unauthorized token') {
+        dashboard.remove()
+        buildLoginPage();
+    }
+
+    let errorContainerP = document.body.querySelector('.error-container p')
+    if (errorContainerP.innerHTML != '{{.Message}}') {
+        cleanCards('.dashboard')
+        let errorContainer = document.body.querySelector('.error-container')
+
+        errorContainer.classList.add('show')
+
+}
+
 }
 
 export async function switchSection(navItemName) {
@@ -60,6 +76,7 @@ export async function switchSection(navItemName) {
         mainContent.appendChild(createCategories());
 
     } else if (navItemName === "Log out") {
+        closeSocket()
         logout()
         cleanCards(".dashboard")
         buildLoginPage()
@@ -74,8 +91,18 @@ async function fetchDataPosts() {
         const data =  await response.json();
         return data
       }
+      const data =  await response.json();
+      if (data.message == 'Unauthorized token') {
+            return data
+            
+        //   cleanCards(".dashboard")
+      }
+      
+
       
 }
+
+
 
 export async function fetchProfileData(Type) {
     const response = await fetch(`/api/profile/${Type.toLowerCase()}`, {
@@ -84,7 +111,7 @@ export async function fetchProfileData(Type) {
       if (response.ok) {
         let mainContent = document.querySelector('.main-content')
         cleanCards('.post-card')
-        const data = await response.json();
+        const data = await response.json();        
         postCard(data, mainContent)
 
       }
@@ -140,10 +167,7 @@ function addEventCommentBtn(createPostBtn, cardId, textarea) {
 }
 
 async function createComment(commentContent, cardId) {
-    console.log(cardId);
-    console.log(commentContent);
-    
-    
+
     const response = await fetch("/api/addcomment", {
         method: "POST",
         headers: {
@@ -158,7 +182,6 @@ async function createComment(commentContent, cardId) {
 
     if (response.ok) {
         const data = await response.json();
-        console.log(data)
         cleanCards('.comments-list')
         cleanCards('.no-posts')
         fetchComments(cardId)
@@ -173,9 +196,7 @@ export async function fetchComments(cardId) {
     
     if (response.ok) {
         let mainContent = document.querySelector('.main-content')
-        // cleanUp(mainContent)
         const data = await response.json()
-        console.log("this",data);
         mainContent.appendChild(commentCard(data, mainContent))    
     }
 }
@@ -191,10 +212,7 @@ export default async function logout() {
         },
         body: JSON.stringify({ uuid: Useruuid }),
     });
-    
-    if (response.ok) {
-        console.log("Logout successful");
-    } 
+
 }
 
 export async function creatPost(categoriesSelected, postContent) {
@@ -217,7 +235,7 @@ export async function creatPost(categoriesSelected, postContent) {
         let dataa = await fetchDataPosts()
         let mainContent = document.querySelector('.main-content')
         postCard(dataa, mainContent)
-        console.log(data);
     }
 
 }
+

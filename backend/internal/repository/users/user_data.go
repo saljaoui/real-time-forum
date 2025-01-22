@@ -21,6 +21,7 @@ func emailExists(email string) bool {
 }
 
 func updateUUIDUser(uudi string, userId int64, expires time.Time) error {
+	UpdateStatusUser(int(userId), "online")
 	stm := "UPDATE user SET UUID=?, expires =?  WHERE id=?"
 	_, err := database.Exec(stm, uudi, expires, userId)
 	return err
@@ -43,8 +44,8 @@ func selectUser(log *Login) *User {
 	user := User{}
 	email := strings.ToLower(log.Email)
 	password := strings.ToLower(log.Password)
-	query := "select id,email,password, firstname ,lastname FROM user where email=?"
-	err := database.SelectOneRow(query, email, password).Scan(&user.Id, &user.Email, &user.Password, &user.Firstname, &user.Lastname)
+	query := "select id, email, password, firstname ,lastname ,nickname ,gender ,age FROM user where email=?"
+	err := database.SelectOneRow(query, email, password).Scan(&user.Id, &user.Email, &user.Password, &user.Firstname, &user.Lastname, &user.Nickname, &user.Gender, &user.Age)
 	if err != nil {
 		fmt.Println("error to select user", err)
 	}
@@ -95,19 +96,4 @@ func UpdateStatusUser(userID int, status string) error {
 	stm := "UPDATE user SET status=? WHERE id=?"
 	_, err := database.Exec(stm, status, userID)
 	return err
-}
-
-func SelectUserStatus(userID int) []UserStatusResponse {
-	list_Users := make([]UserStatusResponse, 0)
-	query := `SELECT u.id, u.firstname, u.lastname, u.status FROM user u WHERE NOT id =?`
-	data_Rows := database.SelectRows(query, userID)
-	for data_Rows.Next(){
-		Row := UserStatusResponse{}
-		err := data_Rows.Scan(&Row.Id,&Row.Firstname,&Row.Lastname,&Row.Status)
-		if err != nil {
-			return nil
-		}    
-		list_Users = append(list_Users, Row)
-	}
-	return list_Users
 }

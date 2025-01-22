@@ -1,8 +1,10 @@
 import { createElementWithClass, getTimeDifferenceInHours } from '/static/utils/utils.js';
 import { creatPost, fetchCard } from '../main.js'
+import { msg } from '/static/Components/rightSidebar.js';
+
 
 export function createHome() {
-
+    msg.receiverId = 0;
     const createNewPost = createElementWithClass('div', 'create-new-post');
     const newPost = createElementWithClass('div', 'new-post');
     const textarea = createElementWithClass('textarea');
@@ -114,7 +116,10 @@ export function actions(ele) {
         postActions.appendChild(actionDiv);
     });
 
-    getUsrActions(ele.id)
+    setTimeout(() => {
+        getUsrActions(ele.id);
+    }, 100);
+
     return postActions;
 }
 
@@ -154,7 +159,6 @@ async function getUsrActions(cardId) {
 
     if (response.ok) {
         let data = await response.json();
-
 
         const likeBtn = document.querySelector(`[data-card-id="${cardId}"][data-action="likes"]`);
         const dislikeBtn = document.querySelector(`[data-card-id="${cardId}"][data-action="dislikes"]`);

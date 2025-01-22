@@ -30,7 +30,7 @@ type ErrorPageData struct {
 }
 
 func JsoneResponseError(w http.ResponseWriter, r *http.Request, message any, code int) {
-	tmpl, err := template.ParseFiles("../../frontend/templates/error.html")
+	tmpl, err := template.ParseFiles("../../frontend/templates/index.html")
 	if err != nil {
 		fmt.Println(err)
 	}

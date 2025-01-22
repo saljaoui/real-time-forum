@@ -56,7 +56,9 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-
+	
+	userid := GetUserId(r)
+	repository.UpdateStatusUser(userid, "online")
 	SetCookie(w, "token", uuid.String(), timeex)
 	JsoneResponse(w, r, loged, http.StatusOK)
 }
@@ -88,6 +90,8 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
+
+	repository.UpdateStatusUser(int(logout.Id), "offline")
 	clearCookies(w)
 	w.WriteHeader(http.StatusOK)
 }

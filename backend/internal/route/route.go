@@ -15,13 +15,13 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/comment", handlers.Handel_GetCommet)
 	mux.HandleFunc("/api/card", handlers.GetCard_handler)
 	mux.HandleFunc("/api/isLogged", handlers.HandleIsLogged)
+	mux.HandleFunc("/api/userId", handlers.HandleUserId)
 
-	mux.HandleFunc("/ws", handlers.NewWS().HandleWebSocket)
-	mux.HandleFunc("/api/users/status", handlers.HandleUsersStatus)
-    // mux.HandleFunc("/api/messages/history", handlers.GetMessageHistory)
+	mux.Handle("/ws", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.NewWS().HandleWebSocket)))
+	mux.Handle("/api/users/status", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleUsersStatus)))
+	mux.Handle("/api/messages/history", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.GetMessageHistory)))
 
 	mux.HandleFunc("/api/auth", handlers.HandelStatus)
-	// mux.Handle("/api/users", http.HandlerFunc(handlers.HandleUsersStatus))
 	mux.Handle("/api/reaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleReaction)))
 	mux.Handle("/api/getUserReaction", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlegetUserReaction)))
 	mux.Handle("/api/home", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HomeHandle)))
@@ -30,7 +30,6 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.Handle("/api/post", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlePost)))
 	mux.Handle("/api/addcomment", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.Handler_AddComment)))
 	mux.Handle("/api/logout", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleLogOut)))
-	
 }
 
 func SetupPageRoutes(mux *http.ServeMux) {
@@ -53,9 +52,12 @@ func SetupPageRoutes(mux *http.ServeMux) {
 		}
 
 		allowedFiles := map[string]bool{
-			"css/style.css": true,
-			"imgs/s.png":    true,
-			"imgs/avatar.png": true,
+			"css/style.css":          true,
+			"imgs/background.png":    true,
+			"imgs/s.png":             true,
+			"imgs/avatar.png":        true,
+			"imgs/backgtoundWeb.png": true,
+			"imgs/message.gif": true,
 		}
 
 		if !allowedFiles[suffix] {
@@ -65,7 +67,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 		http.ServeFile(w, r, "../../frontend/static/"+suffix)
 	})
 
-	mux.HandleFunc("/diprela", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/space", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "../../frontend/templates/index.html")
 	})
 
@@ -74,7 +76,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("/err", func(w http.ResponseWriter, r *http.Request) {
-		filePath := "../../frontend/templates/err.html"
+		filePath := "../../frontend/templates/index.html"
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
 			handlers.JsoneResponse(w, r, "Error loading the error page", http.StatusInternalServerError)
@@ -95,13 +97,12 @@ func isValidPath(path string, paths []string) bool {
 
 func validatePath(w http.ResponseWriter, r *http.Request) {
 	paths := []string{
-		"/err",
-		"/diprela",
+		"/space",
 	}
 	if r.URL.Path == "/" {
-		http.Redirect(w, r, "/diprela", http.StatusFound)
+		http.Redirect(w, r, "/space", http.StatusFound)
 		return
-	} else if !isValidPath(r.URL.Path, paths) || r.URL.Path == "/logout" {
+	} else if !isValidPath(r.URL.Path, paths) {
 		handlers.JsoneResponseError(w, r, "Page Not Found", http.StatusNotFound)
 		return
 	}
