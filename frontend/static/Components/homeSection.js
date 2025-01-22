@@ -114,7 +114,10 @@ export function actions(ele) {
         postActions.appendChild(actionDiv);
     });
 
-    getUsrActions(ele.id)
+    setTimeout(() => {
+        getUsrActions(ele.id);
+    }, 100);
+    
     return postActions;
 }
 

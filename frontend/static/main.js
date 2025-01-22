@@ -86,9 +86,7 @@ export async function fetchProfileData(Type) {
       if (response.ok) {
         let mainContent = document.querySelector('.main-content')
         cleanCards('.post-card')
-        const data = await response.json();
-        console.log(data);
-        
+        const data = await response.json();        
         postCard(data, mainContent)
 
       }
