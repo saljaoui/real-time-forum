@@ -28,6 +28,8 @@ function initializeWebSocket() {
             updateUserStatus(receivedData.userid, receivedData.status)    
         } else if (receivedData.type == 'notif') {            
             createNotif(receivedData.userids)
+        } else if (receivedData.type == 'refrech') {            
+            createUser()
         }
     };
 
@@ -294,4 +296,54 @@ function createNotif(userId) {
     const notif = createElementWithClass('div', 'user-notif')
     userElement.appendChild(notif)
     }
+}
+
+export function sendNewUserSignUp() {
+    msg.type = 'refrech'
+    socket.send(JSON.stringify(msg));
+}
+
+async function fetchUsers() {
+    const response = await fetch('/api/users/status');
+    const usersData = await response.json();
+    let user_id = await getUserId();        
+    return usersData.filter(user => user.id !== user_id); 
+}
+
+async function createUser() {
+    const attendeesList = createElementWithClass('div', 'attendees-list');
+    const users = await fetchUsers(); 
+
+    users.forEach(user => {
+        const userElement = createElementWithClass('div', 'user');
+        userElement.setAttribute('senderId', user.id);
+
+        const avatar = createElementWithClass('div', 'user-avatar');
+
+        const userInfo = createElementWithClass('div', 'user-info');
+        const userName = createElementWithClass('div', 'user-name');
+        userName.textContent = `${user.firstName} ${user.lastName}`;
+
+        const userEmail = createElementWithClass('div', 'user-email');
+        userEmail.textContent = user.email;
+
+        const userStatus = createElementWithClass('div', 'user-status');
+        userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
+
+        userInfo.appendChild(userName);
+        userInfo.appendChild(userEmail);
+        userElement.appendChild(avatar);
+        userElement.appendChild(userStatus);
+        userElement.appendChild(userInfo);
+        addEventListenerToUser(userElement);
+        attendeesList.appendChild(userElement);
+    });
+
+    const sidebarRight = document.querySelector('.sidebar-right');
+    const existingAttendeesList = sidebarRight.querySelector('.attendees-list');
+    if (existingAttendeesList) {
+        existingAttendeesList.remove(); 
+    }
+
+    sidebarRight.appendChild(attendeesList);
 }

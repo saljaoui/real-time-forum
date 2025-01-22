@@ -13,15 +13,15 @@ import (
 )
 
 type userStuts struct {
-	Type string `json:"type"`
-	UserId int `json:"userid"`
+	Type   string `json:"type"`
+	UserId int    `json:"userid"`
 	Status string `json:"status"`
 }
 
 type userNotif struct {
-	Type string `json:"type"`
-	UserIdS int `json:"userids"`
-	UserIdR int `json:"useridr"`
+	Type    string `json:"type"`
+	UserIdS int    `json:"userids"`
+	UserIdR int    `json:"useridr"`
 }
 
 type WS struct {
@@ -72,7 +72,6 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ws *WS) readLoop(userId int) {
-
 	ws.mu.RLock()
 	conn := ws.usersConn[userId]
 	repository.UpdateStatusUser(userId, "online")
@@ -95,16 +94,16 @@ func (ws *WS) readLoop(userId int) {
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
-		// case "status":
-		// 	ws.handleStatusUsers(sts, userId)
+		case "refrech":
+			ws.handleRefrechNewUser(msg, userId)
+
 		}
 	}
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
-
 	ws.mu.RLock()
-	
+
 	msg.AddMessages()
 	ws.handleNotif(msg.SenderId, msg.ReceiverId)
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
@@ -118,8 +117,20 @@ func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 	ws.mu.RUnlock()
 }
 
+func (ws *WS) handleRefrechNewUser(msg messagings.Message, userId int) {
+	msg.Type = "refrech"
+	for _, v := range ws.usersConn {
+		if v != ws.usersConn[userId] {
+			err := v.WriteJSON(msg)
+			if err != nil {
+				log.Printf("Error updating status")
+			}
+		}
+	}
+}
+
 func (ws *WS) handleStatusUsers(sts string, userId int) {
-	var userstr  userStuts
+	var userstr userStuts
 	userstr.UserId = userId
 	userstr.Status = sts
 	userstr.Type = "status"
@@ -137,7 +148,7 @@ func (ws *WS) handleNotif(userSendId int, userRecieveId int) {
 	usrnotif.UserIdS = userSendId
 	usrnotif.UserIdR = userRecieveId
 	err := ws.usersConn[userRecieveId].WriteJSON(usrnotif)
-		if err != nil {
-			log.Printf("Error sending notifaction")
-		}
+	if err != nil {
+		log.Printf("Error sending notifaction")
+	}
 }
