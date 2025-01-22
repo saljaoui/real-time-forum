@@ -291,8 +291,9 @@ function createNotif(userId) {
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
     const notifexit = userElement.querySelector('.user-notif')
     const chat = document.querySelector('.messages-container')
+    console.log(msg.receiverId);
     
-    if (notifexit == null && chat == null) {
+    if (notifexit == null && msg.receiverId != userId) {
     const notif = createElementWithClass('div', 'user-notif')
     userElement.appendChild(notif)
     }
