@@ -26,7 +26,7 @@ function initializeWebSocket() {
         } else if (receivedData.type == 'status') { 
             //{type: 'status', userid: 1, status: 'online'}
             updateUserStatus(receivedData.userid, receivedData.status)    
-        } else if (receivedData.type == 'notif') {
+        } else if (receivedData.type == 'notif') {            
             createNotif(receivedData.userids)
         }
     };
@@ -82,10 +82,6 @@ export async function rightSidebar() {
             userElement.appendChild(avatar);
             userElement.appendChild(userStatus);
             userElement.appendChild(userInfo);
-            if (user.notif == 'yes') {
-                const notif = createElementWithClass('div', 'user-notif')
-                userElement.appendChild(notif)
-            }
             addEventListenerToUser(userElement);
             attendeesList.appendChild(userElement);
             }
@@ -110,9 +106,6 @@ function addEventListenerToUser(userElement) {
         const userElemen = attendeeslist.querySelector(`div[senderId="${senderId}"]`);
         const statusElement = userElemen.querySelector('.user-notif');
         if (statusElement != null) {
-            msg.type = 'notif'
-            msg.notif = 'no'
-            socket.send(JSON.stringify(msg));
             statusElement.remove()
         }
         createMessageInterface(userElement);
@@ -280,12 +273,10 @@ export function closeSocket() {
 
 function createNotif(userId) {
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
-    const notifexit = attendeeslist.querySelector('.user-notif')
-    if (notifexit == null) {
-    msg.type = 'notif'
-    msg.notif = 'yes'
-    msg.receiverId = userId
-    socket.send(JSON.stringify(msg));
+    const notifexit = userElement.querySelector('.user-notif')
+    const chat = document.querySelector('.messages-container')
+    
+    if (notifexit == null && chat == null) {
     const notif = createElementWithClass('div', 'user-notif')
     userElement.appendChild(notif)
     }

@@ -257,7 +257,6 @@ WITH last_messages AS (
                 u.age,
                 u.gender,
 				u.status,
-				u.notif,
                 u.CreateAt as user_created_at,
                 COALESCE(m.message, "") as last_message_content,
                 COALESCE(m.sender_id, 0) as last_message_sender,
@@ -281,8 +280,7 @@ WITH last_messages AS (
             firstname,
             lastname,
             email,
-            status,
-			notif
+            status
         FROM
             last_messages
         ORDER BY
@@ -311,7 +309,6 @@ WITH last_messages AS (
 			&user.LastName,
 			&user.Email,
 			&user.Status,
-			&user.Notif,
 		)
 		if err != nil {
 			log.Printf("Row scan error: %v", err)

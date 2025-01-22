@@ -95,8 +95,6 @@ func (ws *WS) readLoop(userId int) {
 		switch msg.Type {
 		case "message":
 			ws.handlePrivateMessage(msg)
-		case "notif":
-			updateNotif(msg)
 		// case "status":
 		// 	ws.handleStatusUsers(sts, userId)
 		}
@@ -139,8 +137,4 @@ func (ws *WS) handleNotif(userSendId int, userRecieveId int) {
 		if err != nil {
 			log.Printf("Error sending notifaction")
 		}
-}
-
-func updateNotif(msg messagings.Message) {
-	repository.UpdateNotif(msg.Notif, msg.ReceiverId)
 }
