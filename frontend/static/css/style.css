@@ -591,6 +591,13 @@ h1 {
     border-radius: 50%;
 }
 
+.user-notif {
+    width: 37px;
+    height: 37px;
+    background: url("../imgs/notif.png") no-repeat center/cover;
+    border-radius: 50%;
+}
+
 .user-info {
     display: flex;
     flex-direction: column;

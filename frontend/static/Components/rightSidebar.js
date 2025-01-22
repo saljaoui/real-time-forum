@@ -7,6 +7,7 @@ const msg = {
     type: "message",
     receiverId: 0,
     Content: '',
+    notif: '',
 };
 
 function initializeWebSocket() {
@@ -25,7 +26,9 @@ function initializeWebSocket() {
         } else if (receivedData.type == 'status') { 
             //{type: 'status', userid: 1, status: 'online'}
             updateUserStatus(receivedData.userid, receivedData.status)    
-        } 
+        } else if (receivedData.type == 'notif') {            
+            createNotif(receivedData.userids)
+        }
     };
 
     return socket;
@@ -58,8 +61,7 @@ export async function rightSidebar() {
         const usersData = await response.json();
         let user_id = await getUserId()        
         usersData.forEach(user => {
-            if (user_id != user.id) {
-                
+            if (user_id != user.id) {                
             const userElement = createElementWithClass('div', 'user');
             userElement.setAttribute('senderId', user.id);
             
@@ -74,13 +76,12 @@ export async function rightSidebar() {
             
             const userStatus = createElementWithClass('div', 'user-status');
             userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
-
+            
             userInfo.appendChild(userName);
             userInfo.appendChild(userEmail);
             userElement.appendChild(avatar);
             userElement.appendChild(userStatus);
             userElement.appendChild(userInfo);
-            
             addEventListenerToUser(userElement);
             attendeesList.appendChild(userElement);
             }
@@ -95,11 +96,18 @@ export async function rightSidebar() {
 
     return sidebarRight;
 }
+
 function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
+        
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
         page = 0
+        const userElemen = attendeeslist.querySelector(`div[senderId="${senderId}"]`);
+        const statusElement = userElemen.querySelector('.user-notif');
+        if (statusElement != null) {
+            statusElement.remove()
+        }
         createMessageInterface(userElement);
         getMessagesHistory(page)
     });
@@ -275,4 +283,15 @@ function updateUserStatus(userId, status) {
 
 export function closeSocket() {
     socket.close()
+}
+
+function createNotif(userId) {
+    const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
+    const notifexit = userElement.querySelector('.user-notif')
+    const chat = document.querySelector('.messages-container')
+    
+    if (notifexit == null && chat == null) {
+    const notif = createElementWithClass('div', 'user-notif')
+    userElement.appendChild(notif)
+    }
 }

@@ -22,6 +22,7 @@ type UserStatusResponse struct {
 	Status    string    `json:"status"`
 	LastSeen  time.Time `json:"lastSeen,omitempty"`
 	Email     string    `json:"email"`
+	Notif     string    `json:"notif"`
 }
 
 type Status struct {
@@ -249,22 +250,51 @@ func GetUsersStatus(userId int) []UserStatusResponse {
 	db := database.Config()
 
 	query := `
-		SELECT 
-			id,
-			nickname,
-			firstname,
-			lastname,
-			email,
-			status
-		FROM user u
-		ORDER BY 
-			CASE 
-				WHEN status = 'online' THEN 1
-				ELSE 2
-			END,
-			nickname ASC`
+WITH last_messages AS (
+            SELECT
+                u.id AS user_id,
+                u.firstname,
+                u.lastname,
+                u.nickname,
+                u.email,
+                u.age,
+                u.gender,
+				u.status,
+                u.CreateAt as user_created_at,
+                COALESCE(m.message, "") as last_message_content,
+                COALESCE(m.sender_id, 0) as last_message_sender,
+                COALESCE(strftime('%Y-%m-%dT%H:%M:%SZ', m.sent_at), "") AS sort_time
+            FROM
+                user u
+            LEFT JOIN messages m
+                ON m.id = (
+                    SELECT id
+                    FROM messages
+                    WHERE ((sender_id = u.id AND receiver_id = ? ) OR (sender_id = ? AND receiver_id = u.id))
+                    ORDER BY sent_at DESC
+                    LIMIT 1
+                )
+            WHERE
+                u.id != ?
+        )
+        SELECT
+            user_id AS id,
+            nickname,
+            firstname,
+            lastname,
+            email,
+            status
+        FROM
+            last_messages
+        ORDER BY
+            CASE
+                WHEN sort_time = "" THEN 1 
+                ELSE 0
+            END,
+            sort_time DESC,
+            nickname ASC; `
 
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, userId, userId, userId)
 	if err != nil {
 		log.Printf("Query error: %v", err)
 		return nil
