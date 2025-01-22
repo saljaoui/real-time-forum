@@ -1,4 +1,4 @@
-import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
+import { createElementWithClass, cleanUp, cleanCards } from '/static/utils/utils.js';
 import { createDashboard } from '../main.js'
 
 const userDataSingUp = {
@@ -291,4 +291,11 @@ export function buildLoginPage() {
     signUpBtn.addEventListener('click', () => {
         toggleToSignUp(loginSection, signupSection, container);
     });
+
+        let errorContainerP = document.body.querySelector('.error-container p')
+        if (errorContainerP.innerHTML != '{{.Message}}') {
+            cleanCards('.login-page')
+            let errorContainer = document.body.querySelector('.error-container')
+            errorContainer.classList.add('show')
+        }
 }
