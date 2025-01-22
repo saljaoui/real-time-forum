@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         createDashboard();
     } else {
         buildLoginPage();
-    }
+    } 
+    
 });
-
 
 export async function createDashboard() {
 
@@ -40,6 +40,17 @@ export async function createDashboard() {
     dashboard.appendChild(mainContent);
     dashboard.appendChild(sidebar);
     document.body.appendChild(dashboard);
+
+
+    let errorContainerP = document.body.querySelector('.error-container p')
+    if (errorContainerP.innerHTML != '{{.Message}}') {
+        cleanCards('.dashboard')
+        let errorContainer = document.body.querySelector('.error-container')
+
+        errorContainer.classList.add('show')
+
+    }
+
 }
 
 export async function switchSection(navItemName) {
@@ -222,3 +233,4 @@ export async function creatPost(categoriesSelected, postContent) {
     }
 
 }
+

@@ -754,6 +754,46 @@ h1 {
 }
 
 
+.error-container {
+    display: none;
+    background-color: #40B3A2;
+    color: #ffffff;
+    border: 2px solid #2f8e7d;
+    padding: 20px;
+    margin: 0;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease;
+    opacity: 0;
+    z-index: 1000;
+    text-align: center;
+    width: 80%;
+    max-width: 500px;
+}
+
+.error-container h2 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.error-container p {
+    font-size: 18px;
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+.error-container:hover {
+    background-color: #2f8e7d;
+    border-color: #1e6f60;
+    cursor: pointer;
+}
+
 
 
 .user-status.online {
@@ -802,11 +842,10 @@ h1 {
     transform: translateX(100%);
 }
 
-
-
-
-
-
+.error-container.show {
+    display: block;
+    opacity: 1;
+}
 
 
 

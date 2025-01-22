@@ -30,7 +30,6 @@ func SetupAPIRoutes(mux *http.ServeMux) {
 	mux.Handle("/api/post", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandlePost)))
 	mux.Handle("/api/addcomment", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.Handler_AddComment)))
 	mux.Handle("/api/logout", handlers.AuthenticateMiddleware(http.HandlerFunc(handlers.HandleLogOut)))
-
 }
 
 func SetupPageRoutes(mux *http.ServeMux) {
@@ -58,7 +57,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 			"imgs/s.png":             true,
 			"imgs/avatar.png":        true,
 			"imgs/backgtoundWeb.png": true,
-			"imgs/notif.png": true,
+			"imgs/notif.png":         true,
 		}
 
 		if !allowedFiles[suffix] {
@@ -77,7 +76,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("/err", func(w http.ResponseWriter, r *http.Request) {
-		filePath := "../../frontend/templates/err.html"
+		filePath := "../../frontend/templates/index.html"
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
 			handlers.JsoneResponse(w, r, "Error loading the error page", http.StatusInternalServerError)
@@ -103,7 +102,7 @@ func validatePath(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/space", http.StatusFound)
 		return
-	} else if !isValidPath(r.URL.Path, paths) || r.URL.Path == "/logout" {
+	} else if !isValidPath(r.URL.Path, paths) {
 		handlers.JsoneResponseError(w, r, "Page Not Found", http.StatusNotFound)
 		return
 	}
