@@ -97,7 +97,6 @@ func isValidPath(path string, paths []string) bool {
 
 func validatePath(w http.ResponseWriter, r *http.Request) {
 	paths := []string{
-		"/err",
 		"/space",
 	}
 	if r.URL.Path == "/" {

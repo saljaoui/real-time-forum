@@ -95,8 +95,10 @@ func (ws *WS) readLoop(userId int) {
 }
 
 func (ws *WS) handlePrivateMessage(msg messagings.Message) {
-	msg.AddMessages()
+
 	ws.mu.RLock()
+
+	msg.AddMessages()
 	if recipientConn, ok := ws.usersConn[msg.ReceiverId]; ok {
 
 		err := recipientConn.WriteJSON(msg)
@@ -104,6 +106,7 @@ func (ws *WS) handlePrivateMessage(msg messagings.Message) {
 			log.Printf("Error sending message to user %d: %v", msg.ReceiverId, err)
 		}
 	}
+
 	ws.mu.RUnlock()
 }
 

@@ -117,7 +117,7 @@ export function actions(ele) {
     setTimeout(() => {
         getUsrActions(ele.id);
     }, 100);
-    
+
     return postActions;
 }
 
@@ -157,7 +157,6 @@ async function getUsrActions(cardId) {
 
     if (response.ok) {
         let data = await response.json();
-
 
         const likeBtn = document.querySelector(`[data-card-id="${cardId}"][data-action="likes"]`);
         const dislikeBtn = document.querySelector(`[data-card-id="${cardId}"][data-action="dislikes"]`);

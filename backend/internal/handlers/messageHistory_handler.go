@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,7 +13,6 @@ func GetMessageHistory(w http.ResponseWriter, r *http.Request) {
 
 	receiverIdStr := r.URL.Query().Get("receiverId")
 	page := r.URL.Query().Get("page")
-	fmt.Println(page)
 
 	if receiverIdStr == "" {
 		JsoneResponse(w, r, "receiverId is required", http.StatusBadRequest)
