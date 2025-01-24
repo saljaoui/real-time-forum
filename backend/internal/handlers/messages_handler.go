@@ -27,6 +27,7 @@ type userNotif struct {
 type WS struct {
 	upgrader  websocket.Upgrader
 	usersConn map[int]*websocket.Conn
+	numcon    map[int]int
 	mu        sync.RWMutex
 }
 
@@ -40,6 +41,7 @@ func NewWS() *WS {
 			},
 		},
 		usersConn: make(map[int]*websocket.Conn),
+		numcon:    make(map[int]int),
 		mu:        sync.RWMutex{},
 	}
 }
@@ -55,6 +57,7 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	ws.mu.Lock()
 	ws.usersConn[userId] = conn
+	ws.numcon[userId]++
 	repository.UpdateStatusUser(userId, "online")
 	ws.handleStatusUsers("online", userId)
 	ws.mu.Unlock()
@@ -62,8 +65,8 @@ func (ws *WS) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		conn.Close()
 		ws.mu.Lock()
-		uuid := repository.GetUUID(userId)
-		if uuid == "null" {
+		ws.numcon[userId]--
+		if ws.numcon[userId] == 0 {
 			delete(ws.usersConn, userId)
 			repository.UpdateStatusUser(userId, "offline")
 			ws.handleStatusUsers("offline", userId)

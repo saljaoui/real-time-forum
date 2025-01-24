@@ -97,10 +97,3 @@ func UpdateStatusUser(userID int, status string) error {
 	_, err := database.Exec(stm, status, userID)
 	return err
 }
-
-func GetUUID(userId int) string {
-	var uuid string
-	stm := "SELECT c.UUID FROM user c WHERE c.id = ?"
-	database.SelectOneRow(stm, userId).Scan(&uuid)
-	return uuid
-}
