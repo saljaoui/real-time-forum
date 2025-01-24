@@ -600,6 +600,13 @@ h1 {
     border-radius: 50%;
 }
 
+.user-typing {
+    width: 37px;
+    height: 37px;
+    background: url("../imgs/typing.gif") no-repeat center/cover;
+    border-radius: 50%;
+}
+
 .user-info {
     display: flex;
     flex-direction: column;

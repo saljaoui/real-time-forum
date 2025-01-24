@@ -2,6 +2,7 @@ import { createElementWithClass, cleanUp } from '/static/utils/utils.js';
 
 let page = 0
 let socket;
+let isTyping = false
 let attendeeslist;
 export const msg = {
     type: "message",
@@ -12,24 +13,27 @@ export const msg = {
 
 function initializeWebSocket() {
     socket = new WebSocket('ws://localhost:3333/ws');
-    
-    socket.onmessage = (event) => {        
+
+    socket.onmessage = (event) => {
         const receivedData = JSON.parse(event.data);
         if (receivedData.type == 'message') {
-            
+
             let messagesArea = document.querySelector('.messages-area');
             if (msg.receiverId == receivedData.senderId && messagesArea != null) {
-            const messageElement = createMessageElement(receivedData.content, 'message-container received');
-            messagesArea.appendChild(messageElement);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+                const userTypeInside = document.querySelector('.message-container.received.empty')
+                userTypeInside?.remove()
+
+                const messageElement = createMessageElement(receivedData.content, 'message-container received');
+                messagesArea.appendChild(messageElement);
+                messagesArea.scrollTop = messagesArea.scrollHeight;
             }
-        
-        } else if (receivedData.type == 'status') { 
+
+        } else if (receivedData.type == 'status') {
             //{type: 'status', userid: 1, status: 'online'}
-            updateUserStatus(receivedData.userid, receivedData.status)    
-        } else if (receivedData.type == 'notif') {            
+            updateUserStatus(receivedData.userid, receivedData.status)
+        } else if (receivedData.type == 'notif') {
             createNotif(receivedData.userids)
-        } else if (receivedData.type == 'refrech') {            
+        } else if (receivedData.type == 'refrech') {
             createUser()
         } else if (receivedData.type == 'typing') {
             creatTyping(receivedData.userids)
@@ -47,48 +51,48 @@ export async function rightSidebar() {
     socket = initializeWebSocket();
 
     const sidebarRight = createElementWithClass('div', 'sidebar-right');
-    
+
     const topBar = createElementWithClass('div', 'top-bar');
     const searchBar = createElementWithClass('input', 'search-bar');
     searchBar.setAttribute('type', 'text');
     searchBar.setAttribute('placeholder', 'Type to search');
     topBar.appendChild(searchBar);
-    
+
     const users = createElementWithClass('div', 'users');
     const usersHeader = createElementWithClass('div', 'users-header', 'Users');
     const attendeesList = createElementWithClass('div', 'attendees-list');
     attendeeslist = attendeesList;
     users.appendChild(usersHeader);
     users.appendChild(attendeesList);
-    
+
     try {
         const response = await fetch('/api/users/status');
         const usersData = await response.json();
-        let user_id = await getUserId()        
+        let user_id = await getUserId()
         usersData.forEach(user => {
-            if (user_id != user.id) {                
-            const userElement = createElementWithClass('div', 'user');
-            userElement.setAttribute('senderId', user.id);
-            
-            const avatar = createElementWithClass('div', 'user-avatar');
+            if (user_id != user.id) {
+                const userElement = createElementWithClass('div', 'user');
+                userElement.setAttribute('senderId', user.id);
 
-            const userInfo = createElementWithClass('div', 'user-info');
-            const userName = createElementWithClass('div', 'user-name');
-            userName.textContent = `${user.nickname}`;
-            
-            const userEmail = createElementWithClass('div', 'user-email');
-            userEmail.textContent = user.email;
-            
-            const userStatus = createElementWithClass('div', 'user-status');
-            userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
-            
-            userInfo.appendChild(userName);
-            userInfo.appendChild(userEmail);
-            userElement.appendChild(avatar);
-            userElement.appendChild(userStatus);
-            userElement.appendChild(userInfo);
-            addEventListenerToUser(userElement);
-            attendeesList.appendChild(userElement);
+                const avatar = createElementWithClass('div', 'user-avatar');
+
+                const userInfo = createElementWithClass('div', 'user-info');
+                const userName = createElementWithClass('div', 'user-name');
+                userName.textContent = `${user.nickname}`;
+
+                const userEmail = createElementWithClass('div', 'user-email');
+                userEmail.textContent = user.email;
+
+                const userStatus = createElementWithClass('div', 'user-status');
+                userStatus.classList.add(user.status === 'online' ? 'online' : 'offline');
+
+                userInfo.appendChild(userName);
+                userInfo.appendChild(userEmail);
+                userElement.appendChild(avatar);
+                userElement.appendChild(userStatus);
+                userElement.appendChild(userInfo);
+                addEventListenerToUser(userElement);
+                attendeesList.appendChild(userElement);
             }
         });
 
@@ -104,7 +108,7 @@ export async function rightSidebar() {
 
 function addEventListenerToUser(userElement) {
     userElement.addEventListener('click', () => {
-        
+
         const senderId = userElement.getAttribute('senderId');
         msg.receiverId = +senderId
         page = 0
@@ -124,22 +128,22 @@ async function createMessageInterface(userElement) {
     cleanUp(mainContent);
 
     const messagesContainer = createElementWithClass('div', 'messages-container');
-    
+
     const chatHeader = createElementWithClass('div', 'chat-header');
     const recipientInfo = createElementWithClass('div', 'user');
-    
+
     const originalUserName = userElement.querySelector('.user-name');
     const originalUserEmail = userElement.querySelector('.user-email');
     const originalStatus = userElement.querySelector('.user-status');
-    
+
     const avatar = createElementWithClass('div', 'user-avatar');
     const userInfo = createElementWithClass('div', 'user-info');
     const userName = createElementWithClass('div', 'user-name');
     userName.textContent = originalUserName.textContent;
-    
+
     const userEmail = createElementWithClass('div', 'user-email');
     userEmail.textContent = originalUserEmail.textContent;
-    
+
     const userStatus = createElementWithClass('div', 'user-status');
     userStatus.classList.add(originalStatus.classList.contains('online') ? 'online' : 'offline');
 
@@ -151,18 +155,18 @@ async function createMessageInterface(userElement) {
     chatHeader.appendChild(recipientInfo);
 
     const messagesArea = createElementWithClass('div', 'messages-area');
-    
+
     const inputArea = createElementWithClass('div', 'input-area');
     const messageInput = createElementWithClass('textarea', 'message-input');
     messageInput.setAttribute('placeholder', 'Type your message...');
     messageInput.addEventListener("input", (e) => {
-        setTimeout(() => {
             typing()
-        },1000)
+            console.log('1');
+            
     })
     //------->>?<<---------//
     const sendButton = createElementWithClass('button', 'send-button', 'Send');
-    
+
     sendButton.addEventListener('click', () => {
         const message = messageInput.value.trim();
         if (message) {
@@ -183,7 +187,7 @@ async function createMessageInterface(userElement) {
             sendButton.click();
         }
     });
-    
+
     inputArea.appendChild(messageInput);
     inputArea.appendChild(sendButton);
 
@@ -202,11 +206,11 @@ function createMessageElement(content, msgClass) {
     messageContent.textContent = content;
 
     const messageTime = createElementWithClass('div', 'message-time');
-    messageTime.textContent = new Date().toLocaleTimeString(); 
-    
+    messageTime.textContent = new Date().toLocaleTimeString();
+
     messageContainer.appendChild(messageTime);
     messageContainer.appendChild(messageContent);
-    
+
     return messageContainer;
 }
 async function getMessagesHistory(page) {
@@ -218,12 +222,12 @@ async function getMessagesHistory(page) {
         const messages = await response.json();
         let messagesArea = document.querySelector('.messages-area');
         if (messages == null) { return }
-        
+
         const previousHeight = messagesArea.scrollHeight;
-        
+
         messages.forEach((message) => {
             const messageElement = createMessageElement(
-                message.content, 
+                message.content,
                 `message-container ${message.senderId != msg.receiverId ? 'sent' : 'received'}`
             );
 
@@ -245,7 +249,7 @@ function setupScrollListener() {
             await getMessagesHistory(page);
             messagesArea.scrollTop = messagesArea.scrollTop - 100
         }
-        setTimeout(()=> {
+        setTimeout(() => {
             loding = false
         }, 200)
     }, 200);
@@ -267,20 +271,20 @@ function throttle(func, limit) {
 async function getUserId() {
     const response = await fetch('/api/userId');
     const usersID = await response.json();
-    return usersID    
+    return usersID
 }
 
 function updateUserStatus(userId, status) {
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
-    
+
     if (userElement) {
         const statusElement = userElement.querySelector('.user-status');
-        
+
         if (statusElement) {
             statusElement.classList.remove('online', 'offline');
             statusElement.classList.add(status);
         }
-        
+
         const chatHeader = document.querySelector('.chat-header');
         if (chatHeader && msg.receiverId === userId) {
             const headerStatus = chatHeader.querySelector('.user-status');
@@ -295,16 +299,16 @@ function updateUserStatus(userId, status) {
 export function closeSocket() {
     setTimeout(() => {
         socket.close()
-    },1000)
+    }, 1000)
 }
 
 function createNotif(userId) {
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
     const notifexit = userElement.querySelector('.user-notif')
-    
+
     if (notifexit == null && msg.receiverId != userId) {
-    const notif = createElementWithClass('div', 'user-notif')
-    userElement.appendChild(notif)
+        const notif = createElementWithClass('div', 'user-notif')
+        userElement.appendChild(notif)
     }
 }
 
@@ -316,14 +320,14 @@ export function sendNewUserSignUp() {
 async function fetchUsers() {
     const response = await fetch('/api/users/status');
     const usersData = await response.json();
-    let user_id = await getUserId();        
-    return usersData.filter(user => user.id !== user_id); 
+    let user_id = await getUserId();
+    return usersData.filter(user => user.id !== user_id);
 }
 
 async function createUser() {
     const attendeesList = createElementWithClass('div', 'attendees-list');
     attendeeslist = attendeesList
-    const users = await fetchUsers(); 
+    const users = await fetchUsers();
 
     users.forEach(user => {
         const userElement = createElementWithClass('div', 'user');
@@ -353,7 +357,7 @@ async function createUser() {
     const sidebarRight = document.querySelector('.sidebar-right');
     const existingAttendeesList = sidebarRight.querySelector('.attendees-list');
     if (existingAttendeesList) {
-        existingAttendeesList.remove(); 
+        existingAttendeesList.remove();
     }
 
     sidebarRight.appendChild(attendeesList);
@@ -362,10 +366,48 @@ async function createUser() {
 function typing() {
     msg.type = 'typing'
     socket.send(JSON.stringify(msg));
-}
+    console.log('2');
 
+}
+let myTimeout;
 function creatTyping(userId) {
+    console.log('3');
+    
     const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
-    
-    
+    const userType = userElement.querySelector('.user-typing')
+    let messagesArea = document.querySelector('.messages-area');
+    const userTypeInside = document.querySelector('.message-container.received.empty')
+
+
+    if (userType == null) {
+        const userType = createElementWithClass('div', 'user-typing')
+        userElement.appendChild(userType)
+    }
+     if (msg.receiverId == userId) {
+        if (userTypeInside == null) {
+
+            const messageContainer = createElementWithClass('div', 'message-container received empty');
+            const messageContent = createElementWithClass('div', 'message-content');
+            const userType = createElementWithClass('div', 'user-typing')
+
+            messageContent.appendChild(userType)
+            messageContainer.appendChild(messageContent);
+            messagesArea.appendChild(messageContainer);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+    }
+    clearTimeout(myTimeout);
+    myTimeout = setTimeout(() => {
+        console.log('4');
+        
+        const userType = userElement.querySelector('.user-typing')
+        const userTypeInside = document.querySelector('.message-container.received.empty')
+        
+        userType?.remove()
+        userTypeInside?.remove()
+        console.log("removed noth");
+        
+        // messagesArea.scrollTop = messagesArea.scrollHeight;
+    }, 1000)
+
 }
