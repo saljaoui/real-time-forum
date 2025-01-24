@@ -398,16 +398,11 @@ function creatTyping(userId) {
     }
     clearTimeout(myTimeout);
     myTimeout = setTimeout(() => {
-        console.log('4');
-        
         const userType = userElement.querySelector('.user-typing')
         const userTypeInside = document.querySelector('.message-container.received.empty')
         
         userType?.remove()
         userTypeInside?.remove()
-        console.log("removed noth");
-        
-        // messagesArea.scrollTop = messagesArea.scrollHeight;
     }, 1000)
 
 }
