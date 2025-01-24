@@ -31,6 +31,8 @@ function initializeWebSocket() {
             createNotif(receivedData.userids)
         } else if (receivedData.type == 'refrech') {            
             createUser()
+        } else if (receivedData.type == 'typing') {
+            creatTyping(receivedData.userids)
         }
     };
 
@@ -153,8 +155,14 @@ async function createMessageInterface(userElement) {
     const inputArea = createElementWithClass('div', 'input-area');
     const messageInput = createElementWithClass('textarea', 'message-input');
     messageInput.setAttribute('placeholder', 'Type your message...');
+    messageInput.addEventListener("input", (e) => {
+        setTimeout(() => {
+            typing()
+        },1000)
+    })
+    //------->>?<<---------//
     const sendButton = createElementWithClass('button', 'send-button', 'Send');
-
+    
     sendButton.addEventListener('click', () => {
         const message = messageInput.value.trim();
         if (message) {
@@ -349,4 +357,15 @@ async function createUser() {
     }
 
     sidebarRight.appendChild(attendeesList);
+}
+
+function typing() {
+    msg.type = 'typing'
+    socket.send(JSON.stringify(msg));
+}
+
+function creatTyping(userId) {
+    const userElement = attendeeslist.querySelector(`div[senderId="${userId}"]`);
+    
+    
 }

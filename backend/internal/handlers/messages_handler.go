@@ -96,6 +96,8 @@ func (ws *WS) readLoop(userId int) {
 			ws.handlePrivateMessage(msg)
 		case "refrech":
 			ws.handleRefrechNewUser(msg, userId)
+		case "typing":
+			ws.handleTyping(msg.SenderId, msg.ReceiverId)
 		}
 	}
 }
@@ -142,5 +144,16 @@ func (ws *WS) handleNotif(userSendId int, userRecieveId int) {
 	err := ws.usersConn[userRecieveId].WriteJSON(usrnotif)
 	if err != nil {
 		log.Printf("Error sending notifaction")
+	}
+}
+
+func (ws *WS) handleTyping(userSendId int, userRecieveId int) {
+	var usrTyping userNotif
+	usrTyping.Type = "typing"
+	usrTyping.UserIdS = userSendId
+	usrTyping.UserIdR = userRecieveId
+	err := ws.usersConn[userRecieveId].WriteJSON(usrTyping)
+	if err != nil {
+		log.Printf("Error in user typing")
 	}
 }
