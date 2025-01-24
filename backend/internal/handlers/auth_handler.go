@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -31,7 +30,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-  
+
 	SetCookie(w, "token", uuid, timeex)
 	JsoneResponse(w, r, userRegiseter, http.StatusOK)
 }
@@ -56,7 +55,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, message.MessageError, http.StatusBadRequest)
 		return
 	}
-	
+
 	userid := GetUserId(r)
 	repository.UpdateStatusUser(userid, "online")
 	SetCookie(w, "token", uuid.String(), timeex)
@@ -112,10 +111,7 @@ func GetUserId(r *http.Request) int {
 		return 0
 	}
 	uuid := repository.UUID{}
-	m := uuid.UUiduser(cookie.Value)
-	if m.MessageError != "" {
-		fmt.Println(m.MessageError)
-	}
+	uuid.UUiduser(cookie.Value)
 
 	return uuid.Iduser
 }

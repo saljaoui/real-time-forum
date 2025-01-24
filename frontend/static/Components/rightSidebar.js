@@ -213,7 +213,7 @@ async function getMessagesHistory(page) {
         
         const previousHeight = messagesArea.scrollHeight;
         
-        messages.reverse().forEach((message) => {
+        messages.forEach((message) => {
             const messageElement = createMessageElement(
                 message.content, 
                 `message-container ${message.senderId != msg.receiverId ? 'sent' : 'received'}`
@@ -285,7 +285,9 @@ function updateUserStatus(userId, status) {
 }
 
 export function closeSocket() {
-    socket.close()
+    setTimeout(() => {
+        socket.close()
+    },1000)
 }
 
 function createNotif(userId) {
@@ -312,6 +314,7 @@ async function fetchUsers() {
 
 async function createUser() {
     const attendeesList = createElementWithClass('div', 'attendees-list');
+    attendeeslist = attendeesList
     const users = await fetchUsers(); 
 
     users.forEach(user => {

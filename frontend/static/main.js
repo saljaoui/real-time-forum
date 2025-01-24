@@ -50,10 +50,8 @@ export async function createDashboard() {
     if (errorContainerP.innerHTML != '{{.Message}}') {
         cleanCards('.dashboard')
         let errorContainer = document.body.querySelector('.error-container')
-
         errorContainer.classList.add('show')
-
-}
+    }
 
 }
 

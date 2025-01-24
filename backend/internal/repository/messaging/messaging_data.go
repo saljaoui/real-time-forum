@@ -35,7 +35,7 @@ func getMessageHistory(SenderId, ReceiverId int, page string) []Message {
             (sender_id = $1 AND receiver_id = $2)
             OR
             (sender_id = $2 AND receiver_id = $1)
-        ORDER BY sent_at ASC
+        ORDER BY id DESC
         LIMIT $3 OFFSET $4`
     
     DB := database.Config()

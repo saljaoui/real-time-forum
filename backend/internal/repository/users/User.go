@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -96,10 +97,10 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 		return ResponceUser{}, message, ""
 	}
 
-	// message = users.validateUser()
-	// if message.MessageError != "" {
-	// 	return ResponceUser{}, message, ""
-	// }
+	message = users.validateUser()
+	if message.MessageError != "" {
+		return ResponceUser{}, message, ""
+	}
 
 	checkemail := strings.ToLower(users.Email)
 	exists := emailExists(checkemail)
@@ -130,33 +131,33 @@ func (users *User) Register(timeex time.Time) (ResponceUser, messages.Messages, 
 	return loged, message, uuid
 }
 
-// func (users *User) validateUser() messages.Messages {
-// 	message := messages.Messages{}
+func (users *User) validateUser() messages.Messages {
+	message := messages.Messages{}
 
-// 	nameRegex := regexp.MustCompile(`^[A-Za-z]{2,}$`)
-//     if !nameRegex.MatchString(strings.TrimSpace(users.Firstname)) {
-//         message.MessageError = "Invalid First name"
-//         return message
-//     }
+	nameRegex := regexp.MustCompile(`^[A-Za-z]{2,}$`)
+	if !nameRegex.MatchString(strings.TrimSpace(users.Firstname)) {
+		message.MessageError = "Invalid First name"
+		return message
+	}
 
-//     if !nameRegex.MatchString(strings.TrimSpace(users.Lastname)) {
-//         message.MessageError = "Invalid Last name"
-//         return message
-//     }
+	if !nameRegex.MatchString(strings.TrimSpace(users.Lastname)) {
+		message.MessageError = "Invalid Last name"
+		return message
+	}
 
-// 	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`)
-// 	if !emailRegex.MatchString(strings.ToLower(users.Email)) {
-// 		message.MessageError = "Invalid email format"
-// 		return message
-// 	}
+	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`)
+	if !emailRegex.MatchString(strings.ToLower(users.Email)) {
+		message.MessageError = "Invalid email format"
+		return message
+	}
 
-// 	if len(users.Password) < 8 {
-// 		message.MessageError = "Invalis password length less than 8"
-// 		return message
-// 	}
+	if len(users.Password) < 8 {
+		message.MessageError = "Invalis password length less than 8"
+		return message
+	}
 
-// 	return message
-// }
+	return message
+}
 
 func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Messages, uuid.UUID) {
 	message := messages.Messages{}
@@ -174,9 +175,9 @@ func (log *Login) Authentication(time time.Time) (ResponceUser, messages.Message
 			loged := ResponceUser{
 				Id:        user.Id,
 				UUID:      uuid.String(),
-				Gender:	   user.Gender,
+				Gender:    user.Gender,
 				Nickname:  user.Nickname,
-				Age:	   user.Age,
+				Age:       user.Age,
 				Email:     user.Email,
 				Firstname: user.Firstname,
 				Lastname:  user.Lastname,

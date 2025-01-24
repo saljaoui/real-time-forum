@@ -31,12 +31,12 @@ textarea {
     height: 45px;
     width: 100%;
     scrollbar-width: none;
-    transition: all 0.5s ease;
+    transition: all 0.5s ease; 
 }
 
 textarea:focus,
 textarea:not(:placeholder-shown) {
-    height: 150px;
+    height:150px;
     border-color: #40B3A2;
 }
 
@@ -74,7 +74,7 @@ textarea:not(:placeholder-shown) {
 }
 
 .logo-box,
-.add-post-btn {
+.add-post-btn  {
     width: 32px;
     height: 32px;
     background: #40B3A2;
@@ -170,9 +170,8 @@ nav {
     transition: all 0.5s ease;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
 .search-bar:focus {
-    border-color: #40B3A2;
+   border-color: #40B3A2;
 }
 
 .create-new-post,
@@ -272,12 +271,12 @@ nav {
 
 .logged-in {
     color: green;
-}
-
-.logged-out {
+  }
+  
+  .logged-out {
     color: red;
-}
-
+  }
+  
 .categories-content {
     border-top: 1px solid #e5e7eb;
     overflow: hidden;
@@ -303,7 +302,7 @@ nav {
     transition: all 0.2s;
 }
 
-.profile-container {
+  .profile-container {
     max-width: 800px;
     margin-bottom: 1rem;
     background: white;
@@ -502,7 +501,7 @@ h1 {
     margin-bottom: 1rem;
 }
 
-.logout:hover,
+.logout:hover, 
 .nav-item.logout.active {
     color: #f44336;
 }
@@ -610,6 +609,7 @@ h1 {
 .user-email {
     font-size: 0.9rem;
     color: #777;
+    max-width: 100px;
 }
 
 .user-status {
@@ -622,7 +622,7 @@ h1 {
     border: 3px solid #fff;
 }
 
-.categories-list.active+.create-post-btn {
+.categories-list.active + .create-post-btn {
     display: block !important;
 }
 
@@ -815,14 +815,13 @@ h1 {
 .action.active {
     color: #40B3A2;
 }
-
 .action.active svg {
     fill: #40B3A2;
 }
 
 .tab.active {
     color: #40B3A2;
-    border-bottom: 2px solid #40B3A2;
+    border-bottom: 2px solid #40B3A2 ;
 }
 
 .nav-item.active {
@@ -854,49 +853,11 @@ h1 {
 
 
 
-#chat-send {
-    padding: 8px 16px;
-    border: 1px #40B3A2 solid;
-    background: white;
-    color: #40B3A2;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-}
 
 
 
 
-.chat-message .chat-sender {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-}
 
 
-.popup {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    padding: 15px 25px;
-    background-color: #ff4444;
-    color: white;
-    width: max-content;
-    border-radius: 5px;
-    z-index: 1000;
-    animation: slideIn 0.5s forwards;
 
-}
 
-@keyframes slideIn {
-    from {
-        transform: translateY(0);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(100%);
-        opacity: 1;
-    }
-}
