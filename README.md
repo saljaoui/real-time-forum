@@ -1,102 +1,77 @@
-### forum-project
+Real-Time Forum
 
-```
-forum-project/
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
+A full-stack single-page application (SPA) built with Go, JavaScript, SQLite, and WebSockets for real-time communication, messaging, and typing indicators.
+🎯 Project Overview
+
+This project builds upon the classic forum concept by adding real-time capabilities including:
+
+    User Authentication (registration & login)
+
+    Post Management with categories and comments
+
+    Private Messaging with real-time delivery
+
+    Typing Indicators - See when someone is typing in real-time
+
+    Online/Offline Status tracking
+
+    Single-Page Application (SPA) architecture with DOM manipulation
+
+Key Features
+
+✨ Authentication & Authorization
+
+    User registration with nickname, email, age, gender, first/last name
+
+    Login via nickname or email + password
+
+    Secure password hashing with bcrypt
+
+    Session management with cookies
+
+💬 Real-Time Communication
+
+    WebSocket connections for instant messaging
+
+    Typing indicators with smooth animations
+
+    Online/offline user status
+
+    Last message sorting in chat list
+
+📝 Forum Features
+
+    Create posts with categories
+
+    Comment on posts
+
+    Feed display for browsing
+
+    Collapsible comments section
+
+🏗️ Architecture
+
+text
+real-time-forum/
 ├── backend/
-│   ├── cmd/
-│   │   └── main.go
-│   ├── internal/
-│   │   ├── auth/
-│   │   ├── models/
-│   │   ├── handlers/
-│   │   ├── middleware/
-│       |── database/
-|       └── rote/
-│   
+│   ├── main.go
+│   ├── handlers/          # HTTP & WebSocket handlers
+│   ├── models/            # Data structures
+│   ├── db/                # Database layer
+│   └── middleware/        # Auth & session middleware
 ├── frontend/
-│   ├── static/
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
-│   └── templates/
-├── README.md
-└── go.mod
-```
-
-
-
-### Backend
-```
-Backend:
-- Go (standard packages)
-- SQLite for database
-- bcrypt for password encryption
-- UUID for session management
-
-Frontend:
-- Pure HTML/CSS/JavaScript (no frameworks allowed)
-- Templates for rendering
-
-Infrastructure:
-- Docker for containerization
-- Git for version control
-```
-
-### db-schema.mermaid
-```mermaid
-erDiagram
-    Users {
-        int id PK
-        string email
-        string username
-        string password_hash
-        datetime created_at
-    }
-    Posts {
-        int id PK
-        int user_id FK
-        string title
-        string content
-        datetime created_at
-    }
-    Comments {
-        int id PK
-        int post_id FK
-        int user_id FK
-        string content
-        datetime created_at
-    }
-    Categories {
-        int id PK
-        string name
-        string description
-    }
-    Post_Categories {
-        int post_id FK
-        int category_id FK
-    }
-    Reactions {
-        int id PK
-        int user_id FK
-        int post_id FK
-        int comment_id FK
-        string type
-    }
-    Sessions {
-        string uuid PK
-        int user_id FK
-        datetime expires_at
-    }
-
-    Users ||--o{ Posts : creates
-    Users ||--o{ Comments : writes
-    Posts ||--o{ Comments : has
-    Posts ||--o{ Post_Categories : belongs_to
-    Categories ||--o{ Post_Categories : has
-    Users ||--o{ Reactions : makes
-    Posts ||--o{ Reactions : receives
-    Comments ||--o{ Reactions : receives
-    Users ||--o{ Sessions : has
+│   ├── index.html         # Single HTML file (SPA)
+│   ├── css/
+│   │   └── styles.css     # Responsive styling
+│   └── js/
+│       ├── main.js        # App initialization
+│       ├── websocket.js   # WebSocket management
+│       ├── typing.js      # Typing indicator engine
+│       ├── auth.js        # Auth flow
+│       ├── posts.js       # Posts & comments
+│       ├── messages.js    # Private messaging
+│       └── dom.js         # DOM utilities
+├── database.db            # SQLite database
+├── go.mod
+├── go.sum
+└── README
