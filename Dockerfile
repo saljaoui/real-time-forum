@@ -1,22 +1,30 @@
-FROM golang:1.23.2-alpine
+# ---- Build stage ----
+FROM golang:1.23-alpine AS build
+
+# cgo toolchain for github.com/mattn/go-sqlite3
+RUN apk add --no-cache build-base
+
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY backend ./backend
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o /out/forum ./backend/cmd
+
+# ---- Runtime stage ----
+FROM alpine:3.20
+
+# CA certificates are needed for the TLS connection to Turso
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
+COPY --from=build /out/forum /app/forum
+COPY frontend /app/frontend
+COPY backend/internal/database/database.sql /app/backend/internal/database/database.sql
 
-RUN apk update && apk add --no-cache \
-bash \
-build-base \
-sqlite-dev \
-gcc \
-libc-dev \
-&& rm -rf /var/cache/apk/*
+# The app resolves frontend/ and database.sql relative to APP_ROOT
+ENV APP_ROOT=/app
+ENV PORT=3333
+EXPOSE 3333
 
-COPY . .
-RUN go mod download
-WORKDIR /app/backend/cmd
-
-# Build the Go application
-RUN go build -o /app/ourForum 
- 
-
-EXPOSE 8080
-CMD ["/app/ourForum"]
+CMD ["/app/forum"]

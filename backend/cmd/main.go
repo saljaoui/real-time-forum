@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
-	_ "github.com/mattn/go-sqlite3"
+	"os"
 
 	"forum-project/backend/internal/database"
 	route "forum-project/backend/internal/route"
@@ -22,7 +21,11 @@ func main() {
 	route.SetupAPIRoutes(mux)
 	route.SetupPageRoutes(mux)
 
-	serverAddr := ":3333"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3333"
+	}
+	serverAddr := ":" + port
 	log.Printf("Server running at http://localhost%s/space\n", serverAddr)
 	err := http.ListenAndServe(serverAddr, mux)
 	if err != nil {

@@ -1,6 +1,6 @@
 -- database: :memory:
 
-CREATE TABLE user(
+CREATE TABLE IF NOT EXISTS user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nickname text   not NULL UNIQUE,
     -- age text   not NULL,
@@ -16,20 +16,20 @@ CREATE TABLE user(
     status text
 );
 
-CREATE TABLE post (
+CREATE TABLE IF NOT EXISTS post (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     card_id INTEGER,
     FOREIGN KEY (card_id) REFERENCES card(id)
 );
 
-CREATE TABLE category (
+CREATE TABLE IF NOT EXISTS category (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name text not NULL
 );
 
 
-CREATE TABLE post_category (
+CREATE TABLE IF NOT EXISTS post_category (
     post_id INTEGER,
     category_id INTEGER,
     PRIMARY KEY (post_id, category_id),
@@ -37,7 +37,7 @@ CREATE TABLE post_category (
     FOREIGN KEY (category_id) REFERENCES category(id)
 );
 
-CREATE TABLE card (
+CREATE TABLE IF NOT EXISTS card (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     content TEXT NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE card (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE comment (
+CREATE TABLE IF NOT EXISTS comment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     card_id INTEGER,
     target_id INTEGER,
@@ -53,7 +53,7 @@ CREATE TABLE comment (
     FOREIGN KEY (target_id) REFERENCES card(id)
 );
 
-CREATE TABLE likes (
+CREATE TABLE IF NOT EXISTS likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     card_id INTEGER NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE likes (
     UNIQUE(user_id, card_id)
 );
 
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender_id INTEGER,
     receiver_id INTEGER,
@@ -74,13 +74,18 @@ CREATE TABLE messages (
     FOREIGN KEY (receiver_id) REFERENCES user(id)
 );
 
-INSERT INTO category (name) VALUES ('General');
-INSERT INTO category (name) VALUES ('Technology');
-INSERT INTO category (name) VALUES ('Sports');
-INSERT INTO category (name) VALUES ('Entertainment');
-INSERT INTO category (name) VALUES ('Science');
-INSERT INTO category (name) VALUES ('Food');
-INSERT INTO category (name) VALUES ('Travel');
-INSERT INTO category (name) VALUES ('Fashion');
-INSERT INTO category (name) VALUES ('Art');
-INSERT INTO category (name) VALUES ('Music');
+-- Seed categories only on a fresh database.
+WITH c(name) AS (VALUES
+    ('General'),
+    ('Technology'),
+    ('Sports'),
+    ('Entertainment'),
+    ('Science'),
+    ('Food'),
+    ('Travel'),
+    ('Fashion'),
+    ('Art'),
+    ('Music')
+)
+INSERT INTO category (name)
+SELECT name FROM c WHERE NOT EXISTS (SELECT 1 FROM category);

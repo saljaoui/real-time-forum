@@ -31,7 +31,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SetCookie(w, "token", uuid, timeex)
+	SetCookie(w, r, "token", uuid, timeex)
 	JsoneResponse(w, r, userRegiseter, http.StatusOK)
 }
 
@@ -58,7 +58,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	userid := GetUserId(r)
 	repository.UpdateStatusUser(userid, "online")
-	SetCookie(w, "token", uuid.String(), timeex)
+	SetCookie(w, r, "token", uuid.String(), timeex)
 	JsoneResponse(w, r, loged, http.StatusOK)
 }
 
@@ -76,6 +76,12 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 		JsoneResponse(w, r, "Invalid request format", http.StatusBadRequest)
 		return
 	}
+	// The token cookie is HttpOnly, so the frontend cannot read it; fall back to the cookie.
+	if logout.Uuid == "" {
+		if cookie, err := r.Cookie("token"); err == nil {
+			logout.Uuid = cookie.Value
+		}
+	}
 	logout.Id = int64(GetUserId(r))
 	var uuid repository.UUID
 
@@ -91,16 +97,20 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	repository.UpdateStatusUser(int(logout.Id), "offline")
-	clearCookies(w)
+	clearCookies(w, r)
 	w.WriteHeader(http.StatusOK)
 }
 
-func SetCookie(w http.ResponseWriter, name string, value string, time time.Time) {
+func SetCookie(w http.ResponseWriter, r *http.Request, name string, value string, time time.Time) {
 	user := http.Cookie{
-		Name:    name,
-		Value:   value,
-		Expires: time,
-		Path:    "/",
+		Name:     name,
+		Value:    value,
+		Expires:  time,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		// Only mark Secure on https, otherwise local http dev would lose the cookie.
+		Secure: r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	}
 	http.SetCookie(w, &user)
 }
@@ -116,7 +126,7 @@ func GetUserId(r *http.Request) int {
 	return uuid.Iduser
 }
 
-func clearCookies(w http.ResponseWriter) {
-	SetCookie(w, "token", "", time.Now())
-	SetCookie(w, "user_id", "", time.Now())
+func clearCookies(w http.ResponseWriter, r *http.Request) {
+	SetCookie(w, r, "token", "", time.Now())
+	SetCookie(w, r, "user_id", "", time.Now())
 }

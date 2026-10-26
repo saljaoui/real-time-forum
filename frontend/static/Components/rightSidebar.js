@@ -12,7 +12,7 @@ export const msg = {
 };
 
 function initializeWebSocket() {
-    socket = new WebSocket('ws://localhost:3333/ws');
+    socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
 
     socket.onmessage = (event) => {
         const receivedData = JSON.parse(event.data);

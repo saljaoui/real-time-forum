@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+
+	"forum-project/backend/internal/database"
 )
 
 func DecodeJson(r *http.Request) *json.Decoder {
@@ -30,7 +32,7 @@ type ErrorPageData struct {
 }
 
 func JsoneResponseError(w http.ResponseWriter, r *http.Request, message any, code int) {
-	tmpl, err := template.ParseFiles("../../frontend/templates/index.html")
+	tmpl, err := template.ParseFiles(database.Path("frontend/templates/index.html"))
 	if err != nil {
 		fmt.Println(err)
 	}

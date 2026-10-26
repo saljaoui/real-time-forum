@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"forum-project/backend/internal/database"
 	"forum-project/backend/internal/handlers"
 )
 
@@ -47,7 +48,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 		}
 
 		if strings.Contains(suffix, ".js") {
-			http.ServeFile(w, r, "../../frontend/static/"+suffix)
+			http.ServeFile(w, r, database.Path("frontend/static/"+suffix))
 			return
 		}
 
@@ -65,11 +66,11 @@ func SetupPageRoutes(mux *http.ServeMux) {
 			handlers.JsoneResponseError(w, r, "Access Forbidden", http.StatusForbidden)
 			return
 		}
-		http.ServeFile(w, r, "../../frontend/static/"+suffix)
+		http.ServeFile(w, r, database.Path("frontend/static/"+suffix))
 	})
 
 	mux.HandleFunc("/space", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../../frontend/templates/index.html")
+		http.ServeFile(w, r, database.Path("frontend/templates/index.html"))
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +78,7 @@ func SetupPageRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("/err", func(w http.ResponseWriter, r *http.Request) {
-		filePath := "../../frontend/templates/index.html"
+		filePath := database.Path("frontend/templates/index.html")
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
 			handlers.JsoneResponse(w, r, "Error loading the error page", http.StatusInternalServerError)

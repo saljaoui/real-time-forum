@@ -262,9 +262,9 @@ WITH last_messages AS (
                 u.gender,
 				u.status,
                 u.CreateAt as user_created_at,
-                COALESCE(m.message, "") as last_message_content,
+                COALESCE(m.message, '') as last_message_content,
                 COALESCE(m.sender_id, 0) as last_message_sender,
-                COALESCE(strftime('%Y-%m-%dT%H:%M:%SZ', m.sent_at), "") AS sort_time
+                COALESCE(strftime('%Y-%m-%dT%H:%M:%SZ', m.sent_at), '') AS sort_time
             FROM
                 user u
             LEFT JOIN messages m

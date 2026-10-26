@@ -1,0 +1,11 @@
+.git
+.gitignore
+.DS_Store
+**/.DS_Store
+app.db
+app.db-journal
+*.md
+Dockerfile
+.dockerignore
+rm.sh
+script.sh
